@@ -49,6 +49,8 @@ class Age(BaseStr):
             return None
         elif value == '85+':
             value = 85
+        elif not value.isnumeric():
+            raise ValueError(f'Invalid age of {value}.')
 
         value: int = int(value)
         # clip to 85
