@@ -44,12 +44,12 @@ class ClinSizeLongDiamMm(BaseStr):
 
 class Age(BaseStr):
     @classmethod
-    def validate(cls, value: str) -> int | None:
+    def validate(cls, value: str | int) -> int | None:
         if not value:
             return None
         elif value == '85+':
             value = 85
-        elif not value.isnumeric():
+        elif isinstance(value, str) and not value.isnumeric():
             raise ValueError(f'Invalid age of {value}.')
 
         value: int = int(value)
