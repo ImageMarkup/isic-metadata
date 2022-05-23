@@ -62,6 +62,8 @@ for field, validator in [
     ('mel_mitotic_index', MelMitoticIndex),
     ('anatom_site_general', AnatomSiteGeneral),
     ('color_tint', ColorTint),
+    ('patient_id', PatientId),
+    ('lesion_id', LesionId),
 ]:
     FIELD_REGISTRY[field] = {
         'validator': validator,
@@ -125,8 +127,6 @@ FIELD_REGISTRY.update(
                 },
             },
         },
-        'patient_id': {'validator': PatientId, 'search': False},
-        'lesion_id': {'validator': LesionId, 'search': False},
     }
 )
 
