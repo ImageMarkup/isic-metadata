@@ -130,4 +130,15 @@ FIELD_REGISTRY.update(
     }
 )
 
-# age
+for field in FIELD_REGISTRY.keys():
+    if field in [
+        'blurry',
+        'color_tint',
+        'dermoscopic_type',
+        'hairy',
+        'image_type',
+        'marker_pen',
+    ]:
+        FIELD_REGISTRY[field]['type'] = 'acquisition'
+    else:
+        FIELD_REGISTRY[field]['type'] = 'clinical'
