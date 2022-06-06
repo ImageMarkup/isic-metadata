@@ -142,3 +142,8 @@ for field in FIELD_REGISTRY.keys():
         FIELD_REGISTRY[field]['type'] = 'acquisition'
     else:
         FIELD_REGISTRY[field]['type'] = 'clinical'
+
+for field, label in [
+    ('anatom_site_general', 'Anatomic Site'),
+]:
+    FIELD_REGISTRY[field]['label'] = label
