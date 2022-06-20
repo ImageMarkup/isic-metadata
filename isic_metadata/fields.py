@@ -5,6 +5,14 @@ import re
 
 from pydantic.types import constr
 
+DJANGO_AVAILABLE = False
+try:
+    from django import forms
+
+    DJANGO_AVAILABLE = True
+except ImportError:
+    pass
+
 
 class BaseStr(str):
     @classmethod
@@ -56,6 +64,13 @@ class Age(BaseStr):
         # clip to 85
         value = min(value, 85)
         return value
+
+    @staticmethod
+    def to_django_form_field(**kwargs):
+        assert DJANGO_AVAILABLE, 'isic-metadata must be installed with django extras.'
+        kwargs.setdefault('min_value', 1)
+        kwargs.setdefault('max_value', 85)
+        return forms.IntegerField(**kwargs)
 
 
 class Sex(BaseStr):

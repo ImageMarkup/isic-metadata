@@ -32,5 +32,6 @@ setup(
     ],
     python_requires='>=3.8',
     install_requires=['pandas', 'pydantic'],
+    extras_require={'django': ['django']},
     packages=find_packages(),
 )
