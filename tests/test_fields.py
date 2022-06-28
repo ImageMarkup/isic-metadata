@@ -33,17 +33,12 @@ def test_age_special_case():
     assert MetadataRow(age='85+').age == 85
 
 
-# test that non numeric strings fail, this should capture negative values
-# @given(age=st.text().filter(lambda s: not s.isnumeric() and s != ''))
-# def test_age_fuzz(age):
-#     print(age)
-#     with pytest.raises(ValidationError) as excinfo:
-#         MetadataRow(age=age)
-
-
-#     assert 'foo' == excinfo.value
-# except ValidationError as e:
-#     breakpoint()
-#     assert len(e.errors()) == 1
-#     assert e.errors()[0]['loc'][0] == 'age'
-#     print(e.errors())
+@given(
+    clin_size=st.one_of(st.floats(min_value=0, exclude_min=True), st.integers(min_value=1)).map(
+        lambda x: f'{x} mm'
+    )
+)
+def test_clin_size_long_diam_mm_always_rounded(clin_size):
+    metadata = MetadataRow(clin_size_long_diam_mm=clin_size)
+    assert isinstance(metadata.clin_size_long_diam_mm, float)
+    assert metadata.clin_size_long_diam_mm == round(metadata.clin_size_long_diam_mm, ndigits=1)

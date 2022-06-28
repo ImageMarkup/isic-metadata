@@ -33,13 +33,16 @@ class ClinSizeLongDiamMm(BaseStr):
         float_value, units = match.groups()
         float_value = float(float_value)
 
+        if float_value <= 0:
+            raise ValueError(f'Invalid clinical size of {value}.')
+
         # Convert to mm
         if units == 'um':
             float_value *= 1e-3
         elif units == 'cm':
             float_value *= 1e1
 
-        return float_value
+        return round(float_value, ndigits=1)
 
 
 class Age(BaseStr):
