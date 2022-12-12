@@ -61,17 +61,17 @@ class MetadataRow(BaseModel):
     @root_validator(pre=True)
     def build_extra(cls, values: dict[str, Any]) -> dict[str, Any]:  # noqa: N805
         all_required_field_names = {
-            field.alias for field in cls.__fields__.values() if field.alias != 'unstructured'
+            field.alias for field in cls.__fields__.values() if field.alias != "unstructured"
         }  # to support alias
 
         unstructured: dict[str, Any] = {}
         for field_name in list(values):
             if field_name not in all_required_field_names:
                 unstructured[field_name] = values.pop(field_name)
-        values['unstructured'] = unstructured
+        values["unstructured"] = unstructured
         return values
 
-    @validator('*', pre=True)
+    @validator("*", pre=True)
     @classmethod
     def strip(cls, v):
         if isinstance(v, str):
@@ -79,13 +79,13 @@ class MetadataRow(BaseModel):
         return v
 
     @validator(
-        'anatom_site_general',
-        'benign_malignant',
-        'clin_size_long_diam_mm',
-        'diagnosis_confirm_type',
-        'mel_mitotic_index',
-        'mel_thick_mm',
-        'sex',
+        "anatom_site_general",
+        "benign_malignant",
+        "clin_size_long_diam_mm",
+        "diagnosis_confirm_type",
+        "mel_mitotic_index",
+        "mel_thick_mm",
+        "sex",
         pre=True,
     )
     @classmethod
@@ -94,15 +94,15 @@ class MetadataRow(BaseModel):
             v = v.lower()
         return v
 
-    @validator('diagnosis')
+    @validator("diagnosis")
     @classmethod
     def validate_no_benign_melanoma(cls, v, values):
-        if 'benign_malignant' in values:
+        if "benign_malignant" in values:
 
-            if v == 'melanoma' and values['benign_malignant'] == 'benign':
-                raise ValueError('A benign melanoma cannot exist.')
+            if v == "melanoma" and values["benign_malignant"] == "benign":
+                raise ValueError("A benign melanoma cannot exist.")
 
-            if v == 'nevus' and values['benign_malignant'] not in [
+            if v == "nevus" and values["benign_malignant"] not in [
                 BenignMalignantEnum.benign,
                 BenignMalignantEnum.indeterminate_benign,
                 BenignMalignantEnum.indeterminate,
@@ -111,32 +111,32 @@ class MetadataRow(BaseModel):
 
         return v
 
-    @validator('nevus_type')
+    @validator("nevus_type")
     @classmethod
     def validate_non_nevus_diagnoses(cls, v, values):
         if (
             v
-            and values.get('diagnosis')
-            and values['diagnosis'] not in [DiagnosisEnum.nevus, DiagnosisEnum.nevus_spilus]
+            and values.get("diagnosis")
+            and values["diagnosis"] not in [DiagnosisEnum.nevus, DiagnosisEnum.nevus_spilus]
         ):
             raise ValueError(f'Nevus type is inconsistent with {values["diagnosis"]}.')
         return v
 
-    @validator('mel_class', 'mel_mitotic_index', 'mel_thick_mm', 'mel_type', 'mel_ulcer')
+    @validator("mel_class", "mel_mitotic_index", "mel_thick_mm", "mel_type", "mel_ulcer")
     @classmethod
     def validate_melanoma_fields(cls, v, values, config, field):
-        if v and 'diagnosis' in values and values['diagnosis'] != 'melanoma':
-            raise ValueError(f'A non-melanoma {field} cannot exist.')
+        if v and "diagnosis" in values and values["diagnosis"] != "melanoma":
+            raise ValueError(f"A non-melanoma {field} cannot exist.")
         return v
 
-    @validator('diagnosis_confirm_type')
+    @validator("diagnosis_confirm_type")
     @classmethod
     def validate_non_histopathology_diagnoses(cls, v, values):
-        if 'diagnosis' not in values:
-            raise ValueError('Diagnosis confirm type requires a diagnosis.')
+        if "diagnosis" not in values:
+            raise ValueError("Diagnosis confirm type requires a diagnosis.")
 
-        if 'benign_malignant' in values:
-            if v != 'histopathology' and values['benign_malignant'] in [
+        if "benign_malignant" in values:
+            if v != "histopathology" and values["benign_malignant"] in [
                 BenignMalignantEnum.malignant,
                 BenignMalignantEnum.indeterminate_benign,
                 BenignMalignantEnum.indeterminate_malignant,
@@ -147,10 +147,10 @@ class MetadataRow(BaseModel):
 
         return v
 
-    @validator('dermoscopic_type')
+    @validator("dermoscopic_type")
     @classmethod
     def validate_dermoscopic_fields(cls, v, values):
-        if values.get('image_type') != ImageTypeEnum.dermoscopic and v:
-            image_type = values.get('image_type', 'none')
-            raise ValueError(f'Image type {image_type} inconsistent with dermoscopic type {v}.')
+        if values.get("image_type") != ImageTypeEnum.dermoscopic and v:
+            image_type = values.get("image_type", "none")
+            raise ValueError(f"Image type {image_type} inconsistent with dermoscopic type {v}.")
         return v
