@@ -98,7 +98,6 @@ class MetadataRow(BaseModel):
     @classmethod
     def validate_no_benign_melanoma(cls, v, values):
         if "benign_malignant" in values:
-
             if v == "melanoma" and values["benign_malignant"] == "benign":
                 raise ValueError("A benign melanoma cannot exist.")
 
@@ -142,7 +141,6 @@ class MetadataRow(BaseModel):
                 BenignMalignantEnum.indeterminate_malignant,
                 BenignMalignantEnum.indeterminate,
             ]:
-
                 raise ValueError(f'A {values["benign_malignant"]} ...')
 
         return v
