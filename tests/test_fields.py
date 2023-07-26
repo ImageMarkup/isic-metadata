@@ -1,7 +1,16 @@
+from typing import Any
+
 from hypothesis import given, strategies as st
 from pydantic import ValidationError
+import pytest
 
 from isic_metadata.metadata import MetadataRow
+
+
+def test_unstructured_fields():
+    metadata = MetadataRow(diagnosis="melanoma", hello="world")
+    assert metadata.diagnosis == "melanoma"
+    assert metadata.unstructured["hello"] == "world"
 
 
 def test_melanoma_fields():
@@ -42,3 +51,23 @@ def test_clin_size_long_diam_mm_always_rounded(clin_size):
     metadata = MetadataRow(clin_size_long_diam_mm=clin_size)
     assert isinstance(metadata.clin_size_long_diam_mm, float)
     assert metadata.clin_size_long_diam_mm == round(metadata.clin_size_long_diam_mm, ndigits=1)
+
+
+@pytest.mark.parametrize(
+    "field, str_value, parsed_value",
+    [
+        ["age", "54", 54],
+        ["melanocytic", "True", True],
+        ["clin_size_long_diam_mm", "4mm", 4.0],
+        ["mel_thick_mm", ".33mm", 0.33],
+        ["mel_ulcer", "false", False],
+        ["family_hx_mm", "False", False],
+        ["personal_hx_mm", "0", False],
+        ["acquisition_day", "142", 142],
+    ],
+)
+def test_non_str_types(field: str, str_value: str, parsed_value: Any):
+    as_str = MetadataRow(**{field: str_value})
+    as_real = MetadataRow(**{field: parsed_value})
+
+    assert as_str.model_dump()[field] == as_real.model_dump()[field]
