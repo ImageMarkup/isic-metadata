@@ -70,4 +70,4 @@ def test_non_str_types(field: str, str_value: str, parsed_value: Any):
     as_str = MetadataRow(**{field: str_value})
     as_real = MetadataRow(**{field: parsed_value})
 
-    assert as_str.dict()[field] == as_real.dict()[field]
+    assert as_str.model_dump()[field] == as_real.model_dump()[field]

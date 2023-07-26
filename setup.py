@@ -31,6 +31,6 @@ setup(
         "Programming Language :: Python",
     ],
     python_requires=">=3.8",
-    install_requires=["pandas", "pydantic<2"],
+    install_requires=["pandas", "pydantic>=2"],
     packages=find_packages(),
 )
