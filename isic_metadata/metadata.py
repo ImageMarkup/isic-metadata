@@ -134,14 +134,20 @@ class MetadataRow(BaseModel):
         if "diagnosis" not in values:
             raise ValueError("Diagnosis confirm type requires a diagnosis.")
 
-        if "benign_malignant" in values:
-            if v != "histopathology" and values["benign_malignant"] in [
+        if (
+            values.get("benign_malignant")
+            and v != "histopathology"
+            and values["benign_malignant"]
+            in [
                 BenignMalignantEnum.malignant,
                 BenignMalignantEnum.indeterminate_benign,
                 BenignMalignantEnum.indeterminate_malignant,
                 BenignMalignantEnum.indeterminate,
-            ]:
-                raise ValueError(f'A {values["benign_malignant"]} ...')
+            ]
+        ):
+            raise ValueError(
+                f'{values["benign_malignant"]} is incompatible with diagnosis_confirm_type: {v}'
+            )
 
         return v
 
