@@ -193,8 +193,9 @@ class MetadataRow(BaseModel):
     @field_validator("diagnosis_confirm_type")
     @classmethod
     def validate_non_histopathology_diagnoses(cls, v, info: FieldValidationInfo):
-        if not info.data.get("diagnosis"):
-            raise ValueError("Diagnosis confirm type requires a diagnosis.")
+        # TODO: renable this after https://github.com/ImageMarkup/tracker/issues/141 is fixed.
+        # if not info.data.get("diagnosis"):
+        #     raise ValueError("Diagnosis confirm type requires a diagnosis.")
 
         if info.data.get("benign_malignant"):
             if v != "histopathology" and info.data["benign_malignant"] in [

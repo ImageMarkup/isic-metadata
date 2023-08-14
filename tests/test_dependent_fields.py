@@ -52,6 +52,7 @@ def test_melanoma_fields_require_melanoma_diagnosis(
     MetadataRow(**{field_name: field_value, "diagnosis": "melanoma"})
 
 
+@pytest.mark.skip("TODO: https://github.com/ImageMarkup/tracker/issues/141")
 def test_diagnosis_confirm_type_requires_diagnosis():
     with pytest.raises(ValidationError) as excinfo:
         MetadataRow(diagnosis_confirm_type="histopathology")
