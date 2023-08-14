@@ -97,7 +97,7 @@ class MetadataRow(BaseModel):
     @validator("diagnosis")
     @classmethod
     def validate_no_benign_melanoma(cls, v, values):
-        if "benign_malignant" in values:
+        if values.get("benign_malignant"):
             if v == "melanoma" and values["benign_malignant"] == "benign":
                 raise ValueError("A benign melanoma cannot exist.")
 
@@ -124,7 +124,7 @@ class MetadataRow(BaseModel):
     @validator("mel_class", "mel_mitotic_index", "mel_thick_mm", "mel_type", "mel_ulcer")
     @classmethod
     def validate_melanoma_fields(cls, v, values, config, field):
-        if v and "diagnosis" in values and values["diagnosis"] != "melanoma":
+        if v and values.get("diagnosis") and values["diagnosis"] != "melanoma":
             raise ValueError(f"A non-melanoma {field} cannot exist.")
         return v
 
@@ -134,14 +134,20 @@ class MetadataRow(BaseModel):
         if "diagnosis" not in values:
             raise ValueError("Diagnosis confirm type requires a diagnosis.")
 
-        if "benign_malignant" in values:
-            if v != "histopathology" and values["benign_malignant"] in [
+        if (
+            values.get("benign_malignant")
+            and v != "histopathology"
+            and values["benign_malignant"]
+            in [
                 BenignMalignantEnum.malignant,
                 BenignMalignantEnum.indeterminate_benign,
                 BenignMalignantEnum.indeterminate_malignant,
                 BenignMalignantEnum.indeterminate,
-            ]:
-                raise ValueError(f'A {values["benign_malignant"]} ...')
+            ]
+        ):
+            raise ValueError(
+                f'{values["benign_malignant"]} is incompatible with diagnosis_confirm_type: {v}'
+            )
 
         return v
 
