@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from enum import Enum
 import re
+from typing import Optional, Union
 
 from pydantic.types import constr
 
@@ -18,7 +19,7 @@ class BaseStr(str):
 
 class ClinSizeLongDiamMm(BaseStr):
     @classmethod
-    def validate(cls, value) -> float | None:
+    def validate(cls, value) -> Optional[float]:
         if not value:
             return None
 
@@ -47,7 +48,7 @@ class ClinSizeLongDiamMm(BaseStr):
 
 class Age(BaseStr):
     @classmethod
-    def validate(cls, value: str | int) -> int | None:
+    def validate(cls, value: Union[str, int]) -> Optional[int]:
         if not value:
             return None
         elif value == "85+":
@@ -63,7 +64,7 @@ class Age(BaseStr):
 
 class Sex(BaseStr):
     @classmethod
-    def validate(cls, value: str) -> str | None:
+    def validate(cls, value: str) -> Optional[str]:
         if not value:
             return None
 
@@ -89,7 +90,7 @@ class BenignMalignantEnum(str, Enum):
 # todo indeterminable
 class BenignMalignant(BaseStr):
     @classmethod
-    def validate(cls, value: str) -> str | None:
+    def validate(cls, value: str) -> Optional[str]:
         if not value:
             return None
 
@@ -108,7 +109,7 @@ class DiagnosisConfirmTypeEnum(str, Enum):
 
 class DiagnosisConfirmType(BaseStr):
     @classmethod
-    def validate(cls, value: str) -> str | None:
+    def validate(cls, value: str) -> Optional[str]:
         if value not in DiagnosisConfirmTypeEnum._value2member_map_:
             raise ValueError(f"Invalid diagnosis confirm type of: {value}.")
         return value
@@ -155,7 +156,7 @@ class DiagnosisEnum(str, Enum):
 
 class Diagnosis(BaseStr):
     @classmethod
-    def validate(cls, value: str) -> str | None:
+    def validate(cls, value: str) -> Optional[str]:
         if value not in DiagnosisEnum._value2member_map_:
             raise ValueError(f"Invalid diagnosis of: {value}.")
         return value
@@ -176,7 +177,7 @@ class NevusTypeEnum(str, Enum):
 
 class NevusType(BaseStr):
     @classmethod
-    def validate(cls, value: str) -> str | None:
+    def validate(cls, value: str) -> Optional[str]:
         if value not in NevusTypeEnum._value2member_map_:
             raise ValueError(f"Invalid nevus type of: {value}.")
         return value
@@ -192,7 +193,7 @@ class ImageTypeEnum(str, Enum):
 
 class ImageType(BaseStr):
     @classmethod
-    def validate(cls, value: str) -> str | None:
+    def validate(cls, value: str) -> Optional[str]:
         if value not in ImageTypeEnum._value2member_map_:
             raise ValueError(f"Invalid image type of: {value}.")
         return value
@@ -206,7 +207,7 @@ class DermoscopicTypeEnum(str, Enum):
 
 class DermoscopicType(BaseStr):
     @classmethod
-    def validate(cls, value: str) -> str | None:
+    def validate(cls, value: str) -> Optional[str]:
         if value not in DermoscopicTypeEnum._value2member_map_:
             raise ValueError(f"Invalid dermoscopic type of: {value}.")
         return value
@@ -222,7 +223,7 @@ class MelTypeEnum(str, Enum):
 
 class MelType(BaseStr):
     @classmethod
-    def validate(cls, value: str) -> str | None:
+    def validate(cls, value: str) -> Optional[str]:
         if value not in MelTypeEnum._value2member_map_:
             raise ValueError(f"Invalid mel type of: {value}.")
         return value
@@ -238,7 +239,7 @@ class MelClassEnum(str, Enum):
 
 class MelClass(BaseStr):
     @classmethod
-    def validate(cls, value: str) -> str | None:
+    def validate(cls, value: str) -> Optional[str]:
         if value not in MelClassEnum._value2member_map_:
             raise ValueError(f"Invalid mel class of: {value}.")
         return value
@@ -255,7 +256,7 @@ class MelThickMm(BaseStr):
     )
 
     @classmethod
-    def validate(cls, value) -> float | None:
+    def validate(cls, value) -> Optional[float]:
         if isinstance(value, float):
             return value
         # Parse value into floating point component and units
@@ -281,7 +282,7 @@ class MelMitoticIndexEnum(str, Enum):
 
 class MelMitoticIndex(BaseStr):
     @classmethod
-    def validate(cls, value: str) -> str | None:
+    def validate(cls, value: str) -> Optional[str]:
         if value not in MelMitoticIndexEnum._value2member_map_:
             raise ValueError(f"Invalid mel mitotic index of: {value}.")
         return value
@@ -300,7 +301,7 @@ class AnatomSiteGeneralEnum(str, Enum):
 
 class AnatomSiteGeneral(BaseStr):
     @classmethod
-    def validate(cls, value: str) -> str | None:
+    def validate(cls, value: str) -> Optional[str]:
         if value not in AnatomSiteGeneralEnum._value2member_map_:
             raise ValueError(f"Invalid general anatomical site of: {value}.")
         return value
@@ -314,7 +315,7 @@ class ColorTintEnum(str, Enum):
 
 class ColorTint(BaseStr):
     @classmethod
-    def validate(cls, value: str) -> str | None:
+    def validate(cls, value: str) -> Optional[str]:
         if value not in ColorTintEnum._value2member_map_:
             raise ValueError(f"Invalid color tint of: {value}.")
         return value
@@ -324,5 +325,5 @@ class AcquisitionDay(int):
     pass
 
 
-PatientId = constr(regex=r"^IP_[0-9]{7}$")
-LesionId = constr(regex=r"^IL_[0-9]{7}$")
+PatientId = constr(pattern=r"^IP_[0-9]{7}$")
+LesionId = constr(pattern=r"^IL_[0-9]{7}$")

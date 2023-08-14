@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Optional
 
 from pydantic import ValidationError
 import pytest
@@ -8,31 +8,29 @@ from isic_metadata.metadata import MetadataRow
 
 
 def test_diagnosis_no_benign_melanoma():
-    try:
+    with pytest.raises(ValidationError) as excinfo:
         MetadataRow(diagnosis="melanoma", benign_malignant="benign")
-    except ValidationError as e:
-        assert len(e.errors()) == 1
-        assert e.errors()[0]["loc"][0] == "diagnosis"
+    assert len(excinfo.value.errors()) == 1
+    assert excinfo.value.errors()[0]["loc"][0] == "diagnosis"
 
 
 @pytest.mark.parametrize("benign_malignant", ["malignant", "indeterminate/malignant"])
 def test_diagnosis_no_malignant_nevus(benign_malignant):
-    try:
+    with pytest.raises(ValidationError) as excinfo:
         MetadataRow(diagnosis="nevus", benign_malignant=benign_malignant)
-    except ValidationError as e:
-        assert len(e.errors()) == 1
-        assert e.errors()[0]["loc"][0] == "diagnosis"
+    assert len(excinfo.value.errors()) == 1
+    assert excinfo.value.errors()[0]["loc"][0] == "diagnosis"
 
 
 @pytest.mark.parametrize("diagnosis", [None, "melanoma"])
 def test_nevus_type_needs_nevus_diagnosis(diagnosis):
-    try:
+    with pytest.raises(ValidationError) as excinfo:
         MetadataRow(diagnosis=diagnosis, nevus_type="spitz")
-    except ValidationError as e:
-        assert len(e.errors()) == 1
-        assert e.errors()[0]["loc"][0] == "nevus_type"
+    assert len(excinfo.value.errors()) == 1
+    assert excinfo.value.errors()[0]["loc"][0] == "nevus_type"
 
 
+@pytest.mark.parametrize("diagnosis", [None, "basal cell carcinoma"])
 @pytest.mark.parametrize(
     "field_name, field_value",
     [
@@ -43,22 +41,23 @@ def test_nevus_type_needs_nevus_diagnosis(diagnosis):
         ["mel_ulcer", True],
     ],
 )
-def test_melanoma_fields_require_melanoma_diagnosis(field_name: str, field_value: Any):
-    try:
-        MetadataRow(**{field_name: field_value, "diagnosis": "basal cell carcinoma"})
-    except ValidationError as e:
-        assert len(e.errors()) == 1
-        assert e.errors()[0]["loc"][0] == field_name
+def test_melanoma_fields_require_melanoma_diagnosis(
+    diagnosis: Optional[str], field_name: str, field_value: Any
+):
+    with pytest.raises(ValidationError) as excinfo:
+        MetadataRow(**{field_name: field_value, "diagnosis": diagnosis})
+    assert len(excinfo.value.errors()) == 1
+    assert excinfo.value.errors()[0]["loc"][0] == field_name
 
     MetadataRow(**{field_name: field_value, "diagnosis": "melanoma"})
 
 
+@pytest.mark.skip("TODO: https://github.com/ImageMarkup/tracker/issues/141")
 def test_diagnosis_confirm_type_requires_diagnosis():
-    try:
+    with pytest.raises(ValidationError) as excinfo:
         MetadataRow(diagnosis_confirm_type="histopathology")
-    except ValidationError as e:
-        assert len(e.errors()) == 1
-        assert e.errors()[0]["loc"][0] == "diagnosis_confirm_type"
+    assert len(excinfo.value.errors()) == 1
+    assert excinfo.value.errors()[0]["loc"][0] == "diagnosis_confirm_type"
 
     MetadataRow(diagnosis="melanoma", diagnosis_confirm_type="histopathology")
 
@@ -73,15 +72,14 @@ def test_diagnosis_confirm_type_requires_diagnosis():
     ],
 )
 def test_diagnosis_confirm_type_must_be_histopathology(benign_malignant):
-    try:
+    with pytest.raises(ValidationError) as excinfo:
         MetadataRow(
             benign_malignant=benign_malignant,
             diagnosis="solar lentigo",
             diagnosis_confirm_type="single image expert consensus",
         )
-    except ValidationError as e:
-        assert len(e.errors()) == 1
-        assert e.errors()[0]["loc"][0] == "diagnosis_confirm_type"
+    assert len(excinfo.value.errors()) == 1
+    assert excinfo.value.errors()[0]["loc"][0] == "diagnosis_confirm_type"
 
     MetadataRow(
         benign_malignant=benign_malignant,
@@ -91,10 +89,9 @@ def test_diagnosis_confirm_type_must_be_histopathology(benign_malignant):
 
 
 def test_dermoscopic_type_requires_image_type_dermoscopic():
-    try:
+    with pytest.raises(ValidationError) as excinfo:
         MetadataRow(dermoscopic_type="contact polarized")
-    except ValidationError as e:
-        assert len(e.errors()) == 1
-        assert e.errors()[0]["loc"][0] == "dermoscopic_type"
+    assert len(excinfo.value.errors()) == 1
+    assert excinfo.value.errors()[0]["loc"][0] == "dermoscopic_type"
 
     MetadataRow(dermoscopic_type="contact polarized", image_type="dermoscopic")

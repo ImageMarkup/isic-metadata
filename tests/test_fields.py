@@ -14,23 +14,21 @@ def test_unstructured_fields():
 
 
 def test_melanoma_fields():
-    try:
+    with pytest.raises(ValidationError) as excinfo:
         # mel_class can only be set if diagnosis is melanoma
         MetadataRow(diagnosis="angioma", mel_class="invasive melanoma")
-    except ValidationError as e:
-        assert len(e.errors()) == 1
-        assert e.errors()[0]["loc"][0] == "mel_class"
+    assert len(excinfo.value.errors()) == 1
+    assert excinfo.value.errors()[0]["loc"][0] == "mel_class"
 
     # mel_class can only be set if diagnosis is melanoma
     MetadataRow(diagnosis="melanoma", mel_class="invasive melanoma")
 
 
 def test_no_benign_melanoma():
-    try:
+    with pytest.raises(ValidationError) as excinfo:
         MetadataRow(diagnosis="melanoma", benign_malignant="benign")
-    except ValidationError as e:
-        assert len(e.errors()) == 1
-        assert e.errors()[0]["loc"][0] == "diagnosis"
+    assert len(excinfo.value.errors()) == 1
+    assert excinfo.value.errors()[0]["loc"][0] == "diagnosis"
 
 
 @given(age=st.integers(min_value=0).map(str))
@@ -54,20 +52,22 @@ def test_clin_size_long_diam_mm_always_rounded(clin_size):
 
 
 @pytest.mark.parametrize(
-    "field, str_value, parsed_value",
+    "field, str_value, parsed_value, dependent_fields",
+    # dependent_fields is a dict of field names to values are there just to satisfy
+    # the field validators.
     [
-        ["age", "54", 54],
-        ["melanocytic", "True", True],
-        ["clin_size_long_diam_mm", "4mm", 4.0],
-        ["mel_thick_mm", ".33mm", 0.33],
-        ["mel_ulcer", "false", False],
-        ["family_hx_mm", "False", False],
-        ["personal_hx_mm", "0", False],
-        ["acquisition_day", "142", 142],
+        ["age", "54", 54, {}],
+        ["melanocytic", "True", True, {}],
+        ["clin_size_long_diam_mm", "4mm", 4.0, {}],
+        ["mel_thick_mm", ".33mm", 0.33, {"diagnosis": "melanoma"}],
+        ["mel_ulcer", "false", False, {"diagnosis": "melanoma"}],
+        ["family_hx_mm", "False", False, {}],
+        ["personal_hx_mm", "0", False, {}],
+        ["acquisition_day", "142", 142, {}],
     ],
 )
-def test_non_str_types(field: str, str_value: str, parsed_value: Any):
-    as_str = MetadataRow(**{field: str_value})
-    as_real = MetadataRow(**{field: parsed_value})
+def test_non_str_types(field: str, str_value: str, parsed_value: Any, dependent_fields: dict):
+    as_str = MetadataRow(**{field: str_value, **dependent_fields})
+    as_real = MetadataRow(**{field: parsed_value, **dependent_fields})
 
-    assert as_str.dict()[field] == as_real.dict()[field]
+    assert as_str.model_dump()[field] == as_real.model_dump()[field]

@@ -3,7 +3,7 @@ from isic_metadata.metadata import MetadataRow
 
 def get_unstructured_columns(df):
     unstructured_columns = set()
-    structured_columns = set(MetadataRow.__fields__.keys()) - {"unstructured"}
+    structured_columns = set(MetadataRow.model_fields.keys()) - {"unstructured"}
 
     for _, (_, row) in enumerate(df.iterrows(), start=2):
         unstructured_columns |= set(row.keys()) - structured_columns
