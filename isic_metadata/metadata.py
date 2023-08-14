@@ -173,17 +173,19 @@ class MetadataRow(BaseModel):
     @field_validator("nevus_type")
     @classmethod
     def validate_non_nevus_diagnoses(cls, v, info: FieldValidationInfo):
-        if (
-            v
-            and info.data.get("diagnosis")
-            and info.data["diagnosis"] not in [DiagnosisEnum.nevus, DiagnosisEnum.nevus_spilus]
-        ):
+        if not info.data.get("diagnosis"):
+            raise ValueError("Nevus type requires a diagnosis.")
+
+        if v and info.data["diagnosis"] not in [DiagnosisEnum.nevus, DiagnosisEnum.nevus_spilus]:
             raise ValueError(f'Nevus type is inconsistent with {info.data["diagnosis"]}.')
         return v
 
     @field_validator("mel_class", "mel_mitotic_index", "mel_thick_mm", "mel_type", "mel_ulcer")
     @classmethod
     def validate_melanoma_fields(cls, v, info: FieldValidationInfo):
+        if not info.data.get("diagnosis"):
+            raise ValueError(f"{info.field_name} requires a diagnosis of melanoma.")
+
         if v and info.data.get("diagnosis") and info.data["diagnosis"] != "melanoma":
             raise ValueError(f"A non-melanoma {info.data['diagnosis']} cannot exist.")
         return v
