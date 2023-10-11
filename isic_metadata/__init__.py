@@ -12,13 +12,11 @@ from isic_metadata.fields import (
     Diagnosis,
     DiagnosisConfirmType,
     ImageType,
-    LesionId,
     MelClass,
     MelMitoticIndex,
     MelThickMm,
     MelType,
     NevusType,
-    PatientId,
     Sex,
 )
 
@@ -62,8 +60,8 @@ for field, validator in [
     ("mel_mitotic_index", MelMitoticIndex),
     ("anatom_site_general", AnatomSiteGeneral),
     ("color_tint", ColorTint),
-    ("patient_id", PatientId),
-    ("lesion_id", LesionId),
+    ("patient_id", str),
+    ("lesion_id", str),
 ]:
     FIELD_REGISTRY[field] = {
         "validator": validator,

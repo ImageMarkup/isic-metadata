@@ -25,13 +25,11 @@ from isic_metadata.fields import (
     DiagnosisConfirmTypeEnum,
     DiagnosisEnum,
     ImageTypeEnum,
-    LesionId,
     MelClassEnum,
     MelMitoticIndexEnum,
     MelThickMm,
     MelTypeEnum,
     NevusTypeEnum,
-    PatientId,
     Sex,
 )
 
@@ -74,8 +72,8 @@ class MetadataRow(BaseModel):
     ] = None
     melanocytic: Optional[bool] = None
     # these can be passed as ints, floats, etc from pandas so they need to be coerced to strings
-    patient_id: Optional[Annotated[PatientId, BeforeValidator(lambda x: str(x))]] = None
-    lesion_id: Optional[Annotated[LesionId, BeforeValidator(lambda x: str(x))]] = None
+    patient_id: Optional[Annotated[str, BeforeValidator(lambda x: str(x))]] = None
+    lesion_id: Optional[Annotated[str, BeforeValidator(lambda x: str(x))]] = None
     acquisition_day: Optional[int] = None
     marker_pen: Optional[bool] = None
     hairy: Optional[bool] = None

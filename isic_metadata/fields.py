@@ -4,8 +4,6 @@ from enum import Enum
 import re
 from typing import Optional, Union
 
-from pydantic.types import constr
-
 
 class BaseStr(str):
     @classmethod
@@ -323,7 +321,3 @@ class ColorTint(BaseStr):
 
 class AcquisitionDay(int):
     pass
-
-
-PatientId = constr(pattern=r"^IP_[0-9]{7}$")
-LesionId = constr(pattern=r"^IL_[0-9]{7}$")
