@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections import defaultdict
 import functools
 from typing import Any, Callable, Optional, Union
 
@@ -13,6 +14,7 @@ from pydantic import (
     field_validator,
     model_validator,
 )
+from pydantic_core import PydanticCustomError
 from typing_extensions import Annotated
 
 from isic_metadata.fields import (
@@ -43,6 +45,37 @@ def validate_enum_message(field_name: str, v: Any, handler: Callable[[Any], Any]
 
 def EnumErrorMessageValidator(enum, field_name: str):  # noqa: N802
     return WrapValidator(functools.partial(validate_enum_message, field_name))
+
+
+class MetadataBatch(BaseModel):
+    """
+    A batch of metadata rows.
+
+    This is useful for performing checks that span across multiple rows.
+    """
+
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+    items: list[MetadataRow]
+
+    @model_validator(mode="after")
+    def check_patients_lesions(self) -> "MetadataBatch":
+        lesion_to_patients: dict[str, set[str]] = defaultdict(set)
+
+        for item in self.items:
+            if item.patient_id and item.lesion_id:
+                lesion_to_patients[item.lesion_id].add(item.patient_id)
+
+        bad_lesions = [
+            lesion for lesion in lesion_to_patients if len(lesion_to_patients[lesion]) > 1
+        ]
+        if bad_lesions:
+            raise PydanticCustomError(
+                "one_lesion_multiple_patients",
+                "One or more lesions belong to multiple patients",
+                {"examples": bad_lesions},
+            )
+
+        return self
 
 
 class MetadataRow(BaseModel):
