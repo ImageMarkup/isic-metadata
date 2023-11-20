@@ -211,6 +211,20 @@ class DermoscopicType(BaseStr):
         return value
 
 
+class TBPTileTypeEnum(str, Enum):
+    tbp_3d_white = "3D: white"
+    tbp_3d_xp = "3D: XP"
+    tbp_2d = "2D"
+
+
+class TBPTileType(BaseStr):
+    @classmethod
+    def validate(cls, value: str) -> Optional[str]:
+        if value not in TBPTileTypeEnum._value2member_map_:
+            raise ValueError(f"Invalid TBP tile type of: {value}.")
+        return value
+
+
 class MelTypeEnum(str, Enum):
     superficial_spreading_melanoma = "superficial spreading melanoma"
     nodular_melanoma = "nodular melanoma"

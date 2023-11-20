@@ -95,3 +95,13 @@ def test_dermoscopic_type_requires_image_type_dermoscopic():
     assert excinfo.value.errors()[0]["loc"][0] == "dermoscopic_type"
 
     MetadataRow(dermoscopic_type="contact polarized", image_type="dermoscopic")
+
+
+def test_tbp_tile_type_requires_image_type_tbp_tile():
+    with pytest.raises(ValidationError) as excinfo:
+        MetadataRow(tbp_tile_type="2D")
+    assert len(excinfo.value.errors()) == 1
+    assert excinfo.value.errors()[0]["loc"][0] == "tbp_tile_type"
+
+    MetadataRow(tbp_tile_type="2D", image_type="TBP tile: close-up")
+    MetadataRow(tbp_tile_type="2D", image_type="TBP tile: overview")

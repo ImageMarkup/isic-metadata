@@ -34,6 +34,7 @@ from isic_metadata.fields import (
     MelTypeEnum,
     NevusTypeEnum,
     Sex,
+    TBPTileTypeEnum,
 )
 
 
@@ -122,6 +123,9 @@ class MetadataRow(BaseModel):
         Annotated[
             DermoscopicTypeEnum, EnumErrorMessageValidator(DermoscopicTypeEnum, "dermoscopic_type")
         ]
+    ] = None
+    tbp_tile_type: Optional[
+        Annotated[TBPTileTypeEnum, EnumErrorMessageValidator(TBPTileTypeEnum, "tbp_tile_type")]
     ] = None
     anatom_site_general: Optional[
         Annotated[
@@ -259,5 +263,19 @@ class MetadataRow(BaseModel):
             image_type = info.data.get("image_type", "")
             raise ValueError(
                 f"Image type {image_type or 'None'} inconsistent with dermoscopic type '{v.value}'."
+            )
+        return v
+
+    @field_validator("tbp_tile_type")
+    @classmethod
+    def validate_tbp_tile_fields(cls, v, info: FieldValidationInfo):
+        if (
+            info.data.get("image_type")
+            not in [ImageTypeEnum.tbp_tile_close_up, ImageTypeEnum.tbp_tile_overview]
+            and v
+        ):
+            image_type = info.data.get("tbp_tile_type", "")
+            raise ValueError(
+                f"Image type {image_type or 'None'} inconsistent with TBP tile type '{v.value}'."
             )
         return v
