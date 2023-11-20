@@ -33,6 +33,6 @@ setup(
         "Programming Language :: Python",
     ],
     python_requires=">=3.9",
-    install_requires=["pandas", "numpy", "pydantic>=2"],
+    install_requires=["pandas", "numpy", "pydantic>=2.4"],
     packages=find_packages(),
 )

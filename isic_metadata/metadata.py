@@ -9,8 +9,8 @@ from pydantic import (
     BaseModel,
     BeforeValidator,
     ConfigDict,
-    FieldValidationInfo,
     ValidationError,
+    ValidationInfo,
     WrapValidator,
     field_validator,
     model_validator,
@@ -202,7 +202,7 @@ class MetadataRow(BaseModel):
 
     @field_validator("diagnosis")
     @classmethod
-    def validate_no_benign_melanoma(cls, v, info: FieldValidationInfo):
+    def validate_no_benign_melanoma(cls, v, info: ValidationInfo):
         if info.data.get("benign_malignant"):
             if v == "melanoma" and info.data["benign_malignant"] == "benign":
                 raise ValueError("A benign melanoma cannot exist.")
@@ -218,7 +218,7 @@ class MetadataRow(BaseModel):
 
     @field_validator("nevus_type")
     @classmethod
-    def validate_non_nevus_diagnoses(cls, v, info: FieldValidationInfo):
+    def validate_non_nevus_diagnoses(cls, v, info: ValidationInfo):
         if not info.data.get("diagnosis"):
             raise ValueError("Nevus type requires a diagnosis.")
 
@@ -228,7 +228,7 @@ class MetadataRow(BaseModel):
 
     @field_validator("mel_class", "mel_mitotic_index", "mel_thick_mm", "mel_type", "mel_ulcer")
     @classmethod
-    def validate_melanoma_fields(cls, v, info: FieldValidationInfo):
+    def validate_melanoma_fields(cls, v, info: ValidationInfo):
         if not info.data.get("diagnosis"):
             raise ValueError(f"{info.field_name} requires a diagnosis of melanoma.")
 
@@ -238,7 +238,7 @@ class MetadataRow(BaseModel):
 
     @field_validator("diagnosis_confirm_type")
     @classmethod
-    def validate_non_histopathology_diagnoses(cls, v, info: FieldValidationInfo):
+    def validate_non_histopathology_diagnoses(cls, v, info: ValidationInfo):
         # TODO: renable this after https://github.com/ImageMarkup/tracker/issues/141 is fixed.
         # if not info.data.get("diagnosis"):
         #     raise ValueError("Diagnosis confirm type requires a diagnosis.")
@@ -258,7 +258,7 @@ class MetadataRow(BaseModel):
 
     @field_validator("dermoscopic_type")
     @classmethod
-    def validate_dermoscopic_fields(cls, v, info: FieldValidationInfo):
+    def validate_dermoscopic_fields(cls, v, info: ValidationInfo):
         if info.data.get("image_type") != ImageTypeEnum.dermoscopic and v:
             image_type = info.data.get("image_type", "")
             raise ValueError(
@@ -268,7 +268,7 @@ class MetadataRow(BaseModel):
 
     @field_validator("tbp_tile_type")
     @classmethod
-    def validate_tbp_tile_fields(cls, v, info: FieldValidationInfo):
+    def validate_tbp_tile_fields(cls, v, info: ValidationInfo):
         if (
             info.data.get("image_type")
             not in [ImageTypeEnum.tbp_tile_close_up, ImageTypeEnum.tbp_tile_overview]
