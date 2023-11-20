@@ -4,6 +4,7 @@ from collections import defaultdict
 import functools
 from typing import Any, Callable, Optional, Union
 
+import numpy as np
 from pydantic import (
     BaseModel,
     BeforeValidator,
@@ -168,6 +169,16 @@ class MetadataRow(BaseModel):
         if isinstance(v, str):
             v = v.strip()
         return v
+
+    @model_validator(mode="before")
+    @classmethod
+    def strip_none_and_nan_values(cls, values: dict[str, Any]) -> dict[str, Any]:
+        for field_name, value in list(values.items()):
+            if value is None or value is np.nan:
+                del values[field_name]
+            elif isinstance(value, str) and not value.strip():
+                del values[field_name]
+        return values
 
     @field_validator(
         "anatom_site_general",
