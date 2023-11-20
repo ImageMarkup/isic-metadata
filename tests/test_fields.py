@@ -1,6 +1,7 @@
 from typing import Any
 
 from hypothesis import given, strategies as st
+import numpy as np
 from pydantic import ValidationError
 import pytest
 
@@ -11,6 +12,13 @@ def test_unstructured_fields():
     metadata = MetadataRow(diagnosis="melanoma", hello="world")
     assert metadata.diagnosis == "melanoma"
     assert metadata.unstructured["hello"] == "world"
+
+
+@pytest.mark.parametrize(("emptyish_value"), ["", " ", "\t", np.nan, None])
+def test_empty_fields_are_omitted(emptyish_value):
+    metadata = MetadataRow(diagnosis="melanoma", mel_type=emptyish_value)
+    assert metadata.diagnosis == "melanoma"
+    assert metadata.mel_thick_mm is None
 
 
 def test_melanoma_fields():
