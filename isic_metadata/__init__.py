@@ -18,6 +18,7 @@ from isic_metadata.fields import (
     MelType,
     NevusType,
     Sex,
+    TBPTileType,
 )
 
 try:
@@ -25,7 +26,6 @@ try:
 except PackageNotFoundError:
     # package is not installed
     pass
-
 
 FIELD_REGISTRY = {}
 
@@ -55,6 +55,7 @@ for field, validator in [
     ("nevus_type", NevusType),
     ("image_type", ImageType),
     ("dermoscopic_type", DermoscopicType),
+    ("tbp_tile_type", TBPTileType),
     ("mel_type", MelType),
     ("mel_class", MelClass),
     ("mel_mitotic_index", MelMitoticIndex),
