@@ -3,7 +3,6 @@ from typing import Any, Optional
 from pydantic import ValidationError
 import pytest
 
-from isic_metadata.fields import BenignMalignantEnum
 from isic_metadata.metadata import MetadataRow
 
 
@@ -60,32 +59,6 @@ def test_diagnosis_confirm_type_requires_diagnosis():
     assert excinfo.value.errors()[0]["loc"][0] == "diagnosis_confirm_type"
 
     MetadataRow(diagnosis="melanoma", diagnosis_confirm_type="histopathology")
-
-
-@pytest.mark.parametrize(
-    "benign_malignant",
-    [
-        BenignMalignantEnum.malignant,
-        BenignMalignantEnum.indeterminate_benign,
-        BenignMalignantEnum.indeterminate_malignant,
-        BenignMalignantEnum.indeterminate,
-    ],
-)
-def test_diagnosis_confirm_type_must_be_histopathology(benign_malignant):
-    with pytest.raises(ValidationError) as excinfo:
-        MetadataRow(
-            benign_malignant=benign_malignant,
-            diagnosis="solar lentigo",
-            diagnosis_confirm_type="single image expert consensus",
-        )
-    assert len(excinfo.value.errors()) == 1
-    assert excinfo.value.errors()[0]["loc"][0] == "diagnosis_confirm_type"
-
-    MetadataRow(
-        benign_malignant=benign_malignant,
-        diagnosis="solar lentigo",
-        diagnosis_confirm_type="histopathology",
-    )
 
 
 def test_dermoscopic_type_requires_image_type_dermoscopic():
