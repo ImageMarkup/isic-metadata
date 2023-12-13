@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from collections import defaultdict
 import functools
+import math
 from typing import Any, Callable, Optional, Union
 
-import numpy as np
 from pydantic import (
     BaseModel,
     BeforeValidator,
@@ -178,7 +178,7 @@ class MetadataRow(BaseModel):
     @classmethod
     def strip_none_and_nan_values(cls, values: dict[str, Any]) -> dict[str, Any]:
         for field_name, value in list(values.items()):
-            if value is None or value is np.nan:
+            if value is None or (isinstance(value, float) and math.isnan(value)):
                 del values[field_name]
             elif isinstance(value, str) and not value.strip():
                 del values[field_name]
