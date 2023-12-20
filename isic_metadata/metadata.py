@@ -10,7 +10,6 @@ from pydantic import (
     BeforeValidator,
     ConfigDict,
     ValidationError,
-    ValidationInfo,
     WrapValidator,
     field_validator,
     model_validator,
@@ -187,62 +186,77 @@ class MetadataRow(BaseModel):
             v = v.lower()
         return v
 
-    @field_validator("diagnosis")
-    @classmethod
-    def validate_no_benign_melanoma(cls, v, info: ValidationInfo):
-        if info.data.get("benign_malignant"):
-            if v == "melanoma" and info.data["benign_malignant"] == "benign":
+    @model_validator(mode="after")
+    def validate_no_benign_melanoma(self) -> "MetadataRow":
+        if self.benign_malignant is not None:
+            if self.diagnosis == "melanoma" and self.benign_malignant == "benign":
                 raise ValueError("A benign melanoma cannot exist.")
 
-            if v == "nevus" and info.data["benign_malignant"] not in [
+            if self.diagnosis == "nevus" and self.benign_malignant not in [
                 BenignMalignantEnum.benign,
                 BenignMalignantEnum.indeterminate_benign,
                 BenignMalignantEnum.indeterminate,
             ]:
-                raise ValueError(f'A {info.data["benign_malignant"]} nevus cannot exist.')
+                raise ValueError(f"A {self.benign_malignant} nevus cannot exist.")
 
-        return v
+        return self
 
-    @field_validator("nevus_type")
-    @classmethod
-    def validate_non_nevus_diagnoses(cls, v, info: ValidationInfo):
-        if not info.data.get("diagnosis"):
+    @model_validator(mode="after")
+    def validate_non_nevus_diagnoses(self) -> "MetadataRow":
+        if self.diagnosis is None:
             raise ValueError("Nevus type requires a diagnosis.")
 
-        if v and info.data["diagnosis"] not in [DiagnosisEnum.nevus, DiagnosisEnum.nevus_spilus]:
-            raise ValueError(f'Nevus type is inconsistent with {info.data["diagnosis"]}.')
-        return v
+        if self.nevus_type is not None and self.diagnosis not in [
+            DiagnosisEnum.nevus,
+            DiagnosisEnum.nevus_spilus,
+        ]:
+            raise ValueError(f"Nevus type is inconsistent with {self.diagnosis}.")
 
-    @field_validator("mel_class", "mel_mitotic_index", "mel_thick_mm", "mel_type", "mel_ulcer")
-    @classmethod
-    def validate_melanoma_fields(cls, v, info: ValidationInfo):
-        if not info.data.get("diagnosis"):
-            raise ValueError(f"{info.field_name} requires a diagnosis of melanoma.")
+        return self
 
-        if v and info.data.get("diagnosis") and info.data["diagnosis"] != "melanoma":
-            raise ValueError(f"A non-melanoma {info.data['diagnosis']} cannot exist.")
-        return v
+    @model_validator(mode="after")
+    def validate_melanoma_fields(self) -> "MetadataRow":
+        melanoma_fields: list[str] = [
+            "mel_class",
+            "mel_mitotic_index",
+            "mel_thick_mm",
+            "mel_type",
+            "mel_ulcer",
+        ]
 
-    @field_validator("dermoscopic_type")
-    @classmethod
-    def validate_dermoscopic_fields(cls, v, info: ValidationInfo):
-        if info.data.get("image_type") != ImageTypeEnum.dermoscopic and v:
-            image_type = info.data.get("image_type", "")
+        for field in melanoma_fields:
+            if self.diagnosis is None:
+                raise ValueError(f"{field} requires a diagnosis of melanoma.")
+
+            if getattr(self, field) is not None and self.diagnosis and self.diagnosis != "melanoma":
+                raise ValueError(f"A non-melanoma {self.diagnosis} cannot exist.")
+
+        return self
+
+    @model_validator(mode="after")
+    def validate_dermoscopic_fields(self) -> "MetadataRow":
+        if self.image_type is None and self.dermoscopic_type is not None:
+            raise ValueError(f"Dermoscopic type {self.dermoscopic_type} requires an image type.")
+
+        if self.image_type != ImageTypeEnum.dermoscopic and self.dermoscopic_type is not None:
             raise ValueError(
-                f"Image type {image_type or 'None'} inconsistent with dermoscopic type '{v.value}'."
+                f"Image type {self.image_type} inconsistent with dermoscopic type '{self.dermoscopic_type}'."
             )
-        return v
 
-    @field_validator("tbp_tile_type")
-    @classmethod
-    def validate_tbp_tile_fields(cls, v, info: ValidationInfo):
+        return self
+
+    @model_validator(mode="after")
+    def validate_tbp_tile_fields(self) -> "MetadataRow":
+        if self.image_type is None and self.tbp_tile_type is not None:
+            raise ValueError(f"TBP tile type {self.tbp_tile_type} requires an image type.")
+
         if (
-            info.data.get("image_type")
+            self.image_type
             not in [ImageTypeEnum.tbp_tile_close_up, ImageTypeEnum.tbp_tile_overview]
-            and v
+            and self.tbp_tile_type is not None
         ):
-            image_type = info.data.get("tbp_tile_type", "")
             raise ValueError(
-                f"Image type {image_type or 'None'} inconsistent with TBP tile type '{v.value}'."
+                f"Image type {self.image_type} inconsistent with TBP tile type '{self.tbp_tile_type}'."
             )
-        return v
+
+        return self
