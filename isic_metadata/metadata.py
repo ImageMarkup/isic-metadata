@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections import defaultdict
 import functools
 import math
-from typing import Any, Callable, Optional, Union
+from typing import Any, Callable
 
 from pydantic import (
     BaseModel,
@@ -45,7 +45,7 @@ def validate_enum_message(field_name: str, v: Any, handler: Callable[[Any], Any]
         raise ValueError(f"Invalid {field_name} of: {v}")
 
 
-def EnumErrorMessageValidator(enum, field_name: str):  # noqa: N802
+def EnumErrorMessageValidator(_, field_name: str):  # noqa: N802
     return WrapValidator(functools.partial(validate_enum_message, field_name))
 
 
@@ -83,76 +83,63 @@ class MetadataBatch(BaseModel):
 class MetadataRow(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
-    age: Optional[Annotated[Union[str, int], BeforeValidator(Age.validate)]] = None
-    sex: Optional[Annotated[Union[str, int], BeforeValidator(Sex.validate)]] = None
-    benign_malignant: Optional[
-        Annotated[
-            BenignMalignantEnum,
-            EnumErrorMessageValidator(BenignMalignantEnum, "benign_malignant"),
-        ]
-    ] = None
-    diagnosis: Optional[
-        Annotated[DiagnosisEnum, EnumErrorMessageValidator(DiagnosisEnum, "diagnosis")]
-    ] = None
-    diagnosis_confirm_type: Optional[
-        Annotated[
-            DiagnosisConfirmTypeEnum,
-            EnumErrorMessageValidator(DiagnosisConfirmTypeEnum, "diagnosis_confirm_type"),
-        ]
-    ] = None
-    personal_hx_mm: Optional[bool] = None
-    family_hx_mm: Optional[bool] = None
-    clin_size_long_diam_mm: Optional[
-        Annotated[Union[str, float], BeforeValidator(ClinSizeLongDiamMm.validate)]
-    ] = None
-    melanocytic: Optional[bool] = None
-    # these can be passed as ints, floats, etc from pandas so they need to be coerced to strings
-    patient_id: Optional[Annotated[str, BeforeValidator(lambda x: str(x))]] = None
-    lesion_id: Optional[Annotated[str, BeforeValidator(lambda x: str(x))]] = None
-    acquisition_day: Optional[int] = None
-    marker_pen: Optional[bool] = None
-    hairy: Optional[bool] = None
-    blurry: Optional[bool] = None
-    nevus_type: Optional[
-        Annotated[NevusTypeEnum, EnumErrorMessageValidator(NevusTypeEnum, "nevus_type")]
-    ] = None
-    image_type: Optional[
-        Annotated[ImageTypeEnum, EnumErrorMessageValidator(ImageTypeEnum, "image_type")]
-    ] = None
-    dermoscopic_type: Optional[
-        Annotated[
-            DermoscopicTypeEnum, EnumErrorMessageValidator(DermoscopicTypeEnum, "dermoscopic_type")
-        ]
-    ] = None
-    tbp_tile_type: Optional[
-        Annotated[TBPTileTypeEnum, EnumErrorMessageValidator(TBPTileTypeEnum, "tbp_tile_type")]
-    ] = None
-    anatom_site_general: Optional[
-        Annotated[
-            AnatomSiteGeneralEnum,
-            EnumErrorMessageValidator(AnatomSiteGeneralEnum, "anatom_site_general"),
-        ]
-    ] = None
-    color_tint: Optional[
-        Annotated[ColorTintEnum, EnumErrorMessageValidator(ColorTintEnum, "color_tint")]
-    ] = None
-    mel_class: Optional[
-        Annotated[MelClassEnum, EnumErrorMessageValidator(MelClassEnum, "mel_class")]
-    ] = None
-    mel_mitotic_index: Optional[
-        Annotated[
-            MelMitoticIndexEnum, EnumErrorMessageValidator(MelMitoticIndexEnum, "mel_mitotic_index")
-        ]
-    ] = None
-    mel_thick_mm: Optional[
-        Annotated[Union[str, float], BeforeValidator(MelThickMm.validate)]
-    ] = None
-    mel_type: Optional[
-        Annotated[MelTypeEnum, EnumErrorMessageValidator(MelTypeEnum, "mel_type")]
-    ] = None
-    mel_ulcer: Optional[bool] = None
+    age: Annotated[int, BeforeValidator(Age.validate)] | None = None
+    sex: Annotated[int, BeforeValidator(Sex.validate)] | None = None
+    benign_malignant: Annotated[
+        BenignMalignantEnum,
+        EnumErrorMessageValidator(BenignMalignantEnum, "benign_malignant"),
+    ] | None = None
+    diagnosis: Annotated[
+        DiagnosisEnum, EnumErrorMessageValidator(DiagnosisEnum, "diagnosis")
+    ] | None = None
+    diagnosis_confirm_type: Annotated[
+        DiagnosisConfirmTypeEnum,
+        EnumErrorMessageValidator(DiagnosisConfirmTypeEnum, "diagnosis_confirm_type"),
+    ] | None = None
+    personal_hx_mm: bool | None = None
+    family_hx_mm: bool | None = None
+    clin_size_long_diam_mm: Annotated[
+        float, BeforeValidator(ClinSizeLongDiamMm.validate)
+    ] | None = None
+    melanocytic: bool | None = None
+    patient_id: Annotated[str, BeforeValidator(lambda x: str(x))] | None = None
+    lesion_id: Annotated[str, BeforeValidator(lambda x: str(x))] | None = None
+    acquisition_day: int | None = None
+    marker_pen: bool | None = None
+    hairy: bool | None = None
+    blurry: bool | None = None
+    nevus_type: Annotated[
+        NevusTypeEnum, EnumErrorMessageValidator(NevusTypeEnum, "nevus_type")
+    ] | None = None
+    image_type: Annotated[
+        ImageTypeEnum, EnumErrorMessageValidator(ImageTypeEnum, "image_type")
+    ] | None = None
+    dermoscopic_type: Annotated[
+        DermoscopicTypeEnum, EnumErrorMessageValidator(DermoscopicTypeEnum, "dermoscopic_type")
+    ] | None = None
+    tbp_tile_type: Annotated[
+        TBPTileTypeEnum, EnumErrorMessageValidator(TBPTileTypeEnum, "tbp_tile_type")
+    ] | None = None
+    anatom_site_general: Annotated[
+        AnatomSiteGeneralEnum,
+        EnumErrorMessageValidator(AnatomSiteGeneralEnum, "anatom_site_general"),
+    ] | None = None
+    color_tint: Annotated[
+        ColorTintEnum, EnumErrorMessageValidator(ColorTintEnum, "color_tint")
+    ] | None = None
+    mel_class: Annotated[
+        MelClassEnum, EnumErrorMessageValidator(MelClassEnum, "mel_class")
+    ] | None = None
+    mel_mitotic_index: Annotated[
+        MelMitoticIndexEnum, EnumErrorMessageValidator(MelMitoticIndexEnum, "mel_mitotic_index")
+    ] | None = None
+    mel_thick_mm: Annotated[float, BeforeValidator(MelThickMm.validate)] | None = None
+    mel_type: Annotated[
+        MelTypeEnum, EnumErrorMessageValidator(MelTypeEnum, "mel_type")
+    ] | None = None
+    mel_ulcer: bool | None = None
 
-    unstructured: Optional[dict] = {}
+    unstructured: dict[str, Any] | None = {}
 
     # See https://github.com/samuelcolvin/pydantic/issues/2285 for more detail
     @model_validator(mode="before")
@@ -169,7 +156,7 @@ class MetadataRow(BaseModel):
 
     @field_validator("*", mode="before")
     @classmethod
-    def strip(cls, v):
+    def strip(cls, v: Any) -> Any:
         if isinstance(v, str):
             v = v.strip()
         return v
@@ -195,7 +182,7 @@ class MetadataRow(BaseModel):
         mode="before",
     )
     @classmethod
-    def lower(cls, v):
+    def lower(cls, v: Any) -> Any:
         if isinstance(v, str):
             v = v.lower()
         return v
