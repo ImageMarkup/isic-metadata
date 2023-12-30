@@ -1,20 +1,19 @@
 from __future__ import annotations
 
 from collections import defaultdict
-import functools
-import math
-from typing import Any, Callable
+from typing import Any, Literal
+from annotated_types import Ge
 
 from pydantic import (
+    AfterValidator,
     BaseModel,
     BeforeValidator,
     ConfigDict,
     ValidationError,
-    WrapValidator,
     field_validator,
     model_validator,
 )
-from pydantic_core import PydanticCustomError
+from pydantic_core import ErrorDetails, PydanticCustomError
 from typing_extensions import Annotated
 
 from isic_metadata.fields import (
@@ -32,20 +31,78 @@ from isic_metadata.fields import (
     MelThickMm,
     MelTypeEnum,
     NevusTypeEnum,
-    Sex,
     TBPTileTypeEnum,
 )
 
 
-def validate_enum_message(field_name: str, v: Any, handler: Callable[[Any], Any]):
-    try:
-        return handler(v)
-    except ValidationError:
-        raise ValueError(f"Invalid {field_name} of: {v}")
+CUSTOM_MESSAGES = {
+    "enum": "Unsupported value for {loc}: '{value}'.",
+    "int_parsing": "Unable to parse value as an integer.",
+    "bool_parsing": "Unable to parse value as a boolean.",
+    "float_parsing": "Unable to parse value as a number.",
+    "greater_than_equal": "Number must be greater than or equal to {ge}.",
+}
 
 
-def EnumErrorMessageValidator(_, field_name: str):  # noqa: N802
-    return WrapValidator(functools.partial(validate_enum_message, field_name))
+def convert_errors(e: ValidationError) -> list[ErrorDetails]:
+    new_errors: list[ErrorDetails] = []
+    for error in e.errors():
+        custom_message = CUSTOM_MESSAGES.get(error["type"])
+        if custom_message:
+            ctx = error.get("ctx")
+            loc = {"loc": error.get("loc")[0]}
+            if ctx:
+                ctx.update(loc)
+                ctx.update({"value": error["input"]})
+
+            error["msg"] = custom_message.format(**ctx) if ctx else custom_message
+        new_errors.append(error)
+    return new_errors
+
+
+def error_incompatible_fields(
+    field1: str, field2: str, field1_value: str | None = None, field2_value: str | None = None
+) -> PydanticCustomError:
+    message = (
+        "Setting {{field1}}{maybe_field1_value} is incompatible with {{field2}}"
+        "{maybe_field2_value}."
+    ).format(
+        maybe_field1_value=" to {field1_value}" if field1_value else "",
+        maybe_field2_value=" {field2_value}" if field2_value else "",
+    )
+
+    return PydanticCustomError(
+        "incompatible_fields",
+        message,
+        {
+            "field1": field1,
+            "field1_value": field1_value,
+            "field2": field2,
+            "field2_value": field2_value,
+        },
+    )
+
+
+def error_missing_field(
+    field1: str, field2: str, field1_value: str | None = None, field2_value: str | None = None
+) -> PydanticCustomError:
+    message = (
+        "Setting {{field1}}{maybe_field1_value} requires setting {{field2}}{maybe_field2_value}."
+    ).format(
+        maybe_field1_value=" to {field1_value}" if field1_value else "",
+        maybe_field2_value=" to {field2_value}" if field2_value else "",
+    )
+
+    return PydanticCustomError(
+        "missing_field",
+        message,
+        {
+            "field1": field1,
+            "field1_value": field1_value,
+            "field2": field2,
+            "field2_value": field2_value,
+        },
+    )
 
 
 class MetadataBatch(BaseModel):
@@ -55,7 +112,6 @@ class MetadataBatch(BaseModel):
     This is useful for performing checks that span across multiple rows.
     """
 
-    model_config = ConfigDict(arbitrary_types_allowed=True)
     items: list[MetadataRow]
 
     @model_validator(mode="after")
@@ -72,79 +128,60 @@ class MetadataBatch(BaseModel):
         if bad_lesions:
             raise PydanticCustomError(
                 "one_lesion_multiple_patients",
-                "One or more lesions belong to multiple patients",
-                {"examples": bad_lesions},
+                "One or more lesions belong to multiple patients.",
+                {"examples": bad_lesions[:5]},
             )
 
         return self
 
 
 class MetadataRow(BaseModel):
-    model_config = ConfigDict(arbitrary_types_allowed=True)
+    model_config = ConfigDict(
+        arbitrary_types_allowed=True,
+        # This is useful for patient/lesion id fields, which could be numeric
+        coerce_numbers_to_str=True,
+        # extra values should be gathered by build_extra, so there's no need to allow them here
+        extra="forbid",
+    )
 
-    age: Annotated[int, BeforeValidator(Age.validate)] | None = None
-    sex: Annotated[int, BeforeValidator(Sex.validate)] | None = None
-    benign_malignant: Annotated[
-        BenignMalignantEnum,
-        EnumErrorMessageValidator(BenignMalignantEnum, "benign_malignant"),
+    age: Annotated[
+        int, BeforeValidator(Age.handle_85plus), AfterValidator(Age.clamp_upper_bound), Ge(0)
     ] | None = None
-    diagnosis: Annotated[
-        DiagnosisEnum, EnumErrorMessageValidator(DiagnosisEnum, "diagnosis")
-    ] | None = None
-    diagnosis_confirm_type: Annotated[
-        DiagnosisConfirmTypeEnum,
-        EnumErrorMessageValidator(DiagnosisConfirmTypeEnum, "diagnosis_confirm_type"),
-    ] | None = None
+    sex: Literal["male", "female"] | None = None
+    benign_malignant: BenignMalignantEnum | None = None
+    diagnosis: DiagnosisEnum | None = None
+    diagnosis_confirm_type: DiagnosisConfirmTypeEnum | None = None
     personal_hx_mm: bool | None = None
     family_hx_mm: bool | None = None
     clin_size_long_diam_mm: Annotated[
-        float, BeforeValidator(ClinSizeLongDiamMm.validate)
+        float, BeforeValidator(ClinSizeLongDiamMm.parse_measurement_str)
     ] | None = None
     melanocytic: bool | None = None
-    patient_id: Annotated[str, BeforeValidator(lambda x: str(x))] | None = None
-    lesion_id: Annotated[str, BeforeValidator(lambda x: str(x))] | None = None
+    patient_id: str | None = None
+    lesion_id: str | None = None
     acquisition_day: int | None = None
     marker_pen: bool | None = None
     hairy: bool | None = None
     blurry: bool | None = None
-    nevus_type: Annotated[
-        NevusTypeEnum, EnumErrorMessageValidator(NevusTypeEnum, "nevus_type")
-    ] | None = None
-    image_type: Annotated[
-        ImageTypeEnum, EnumErrorMessageValidator(ImageTypeEnum, "image_type")
-    ] | None = None
-    dermoscopic_type: Annotated[
-        DermoscopicTypeEnum, EnumErrorMessageValidator(DermoscopicTypeEnum, "dermoscopic_type")
-    ] | None = None
-    tbp_tile_type: Annotated[
-        TBPTileTypeEnum, EnumErrorMessageValidator(TBPTileTypeEnum, "tbp_tile_type")
-    ] | None = None
-    anatom_site_general: Annotated[
-        AnatomSiteGeneralEnum,
-        EnumErrorMessageValidator(AnatomSiteGeneralEnum, "anatom_site_general"),
-    ] | None = None
-    color_tint: Annotated[
-        ColorTintEnum, EnumErrorMessageValidator(ColorTintEnum, "color_tint")
-    ] | None = None
-    mel_class: Annotated[
-        MelClassEnum, EnumErrorMessageValidator(MelClassEnum, "mel_class")
-    ] | None = None
-    mel_mitotic_index: Annotated[
-        MelMitoticIndexEnum, EnumErrorMessageValidator(MelMitoticIndexEnum, "mel_mitotic_index")
-    ] | None = None
-    mel_thick_mm: Annotated[float, BeforeValidator(MelThickMm.validate)] | None = None
-    mel_type: Annotated[
-        MelTypeEnum, EnumErrorMessageValidator(MelTypeEnum, "mel_type")
-    ] | None = None
+    nevus_type: NevusTypeEnum | None = None
+    image_type: ImageTypeEnum | None = None
+    dermoscopic_type: DermoscopicTypeEnum | None = None
+    tbp_tile_type: TBPTileTypeEnum | None = None
+    anatom_site_general: AnatomSiteGeneralEnum | None = None
+    color_tint: ColorTintEnum | None = None
+    mel_class: MelClassEnum | None = None
+    mel_mitotic_index: MelMitoticIndexEnum | None = None
+    mel_thick_mm: Annotated[float, BeforeValidator(MelThickMm.parse_measurement_str)] | None = None
+    mel_type: MelTypeEnum | None = None
     mel_ulcer: bool | None = None
 
-    unstructured: dict[str, Any] | None = {}
+    unstructured: dict[str, Any] = {}
 
     # See https://github.com/samuelcolvin/pydantic/issues/2285 for more detail
     @model_validator(mode="before")
     @classmethod
-    def build_extra(cls, values: dict[str, Any]) -> dict[str, Any]:  # noqa: N805
-        structured_field_names = [field for field in cls.model_fields if field != "unstructured"]
+    def build_extra(cls, values: dict[str, Any]) -> dict[str, Any]:
+        structured_field_names = {field for field in cls.model_fields if field != "unstructured"}
 
         unstructured: dict[str, Any] = {}
         for field_name in list(values):
@@ -156,19 +193,12 @@ class MetadataRow(BaseModel):
     @field_validator("*", mode="before")
     @classmethod
     def strip(cls, v: Any) -> Any:
+        # str_strip_whitespace doesn't seem to work for Literal values as it does for str and enum
         if isinstance(v, str):
             v = v.strip()
-        return v
 
-    @model_validator(mode="before")
-    @classmethod
-    def strip_none_and_nan_values(cls, values: dict[str, Any]) -> dict[str, Any]:
-        for field_name, value in list(values.items()):
-            if value is None or (isinstance(value, float) and math.isnan(value)):
-                del values[field_name]
-            elif isinstance(value, str) and not value.strip():
-                del values[field_name]
-        return values
+        # drop empty strings as though they were never passed
+        return None if v == "" else v
 
     @field_validator(
         "anatom_site_general",
@@ -188,29 +218,39 @@ class MetadataRow(BaseModel):
 
     @model_validator(mode="after")
     def validate_no_benign_melanoma(self) -> "MetadataRow":
-        if self.benign_malignant is not None:
-            if self.diagnosis == "melanoma" and self.benign_malignant == "benign":
-                raise ValueError("A benign melanoma cannot exist.")
+        if not self.benign_malignant:
+            return self
 
-            if self.diagnosis == "nevus" and self.benign_malignant not in [
+        if (self.diagnosis == "melanoma" and self.benign_malignant == "benign") or (
+            self.diagnosis == "nevus"
+            and self.benign_malignant
+            not in [
                 BenignMalignantEnum.benign,
                 BenignMalignantEnum.indeterminate_benign,
                 BenignMalignantEnum.indeterminate,
-            ]:
-                raise ValueError(f"A {self.benign_malignant} nevus cannot exist.")
+            ]
+        ):
+            raise error_incompatible_fields(
+                "diagnosis",
+                "benign_malignant",
+                self.diagnosis.value,
+                self.benign_malignant.value,
+            )
 
         return self
 
     @model_validator(mode="after")
     def validate_non_nevus_diagnoses(self) -> "MetadataRow":
-        if self.diagnosis is None:
-            raise ValueError("Nevus type requires a diagnosis.")
+        if not self.nevus_type:
+            return self
 
-        if self.nevus_type is not None and self.diagnosis not in [
+        if not self.diagnosis:
+            raise error_missing_field("nevus_type", "diagnosis")
+        elif self.diagnosis not in [
             DiagnosisEnum.nevus,
             DiagnosisEnum.nevus_spilus,
         ]:
-            raise ValueError(f"Nevus type is inconsistent with {self.diagnosis}.")
+            raise error_incompatible_fields("nevus_type", "diagnosis", field2_value=self.diagnosis)
 
         return self
 
@@ -225,38 +265,47 @@ class MetadataRow(BaseModel):
         ]
 
         for field in melanoma_fields:
-            if self.diagnosis is None:
-                raise ValueError(f"{field} requires a diagnosis of melanoma.")
+            if not getattr(self, field):
+                continue
 
-            if getattr(self, field) is not None and self.diagnosis and self.diagnosis != "melanoma":
-                raise ValueError(f"A non-melanoma {self.diagnosis} cannot exist.")
+            if not self.diagnosis:
+                raise error_missing_field(field, "diagnosis", field2_value="melanoma")
+            elif self.diagnosis != "melanoma":
+                raise error_incompatible_fields(
+                    field, "diagnosis", field2_value=self.diagnosis.value
+                )
 
         return self
 
     @model_validator(mode="after")
     def validate_dermoscopic_fields(self) -> "MetadataRow":
-        if self.image_type is None and self.dermoscopic_type is not None:
-            raise ValueError(f"Dermoscopic type {self.dermoscopic_type} requires an image type.")
+        if not self.dermoscopic_type:
+            return self
 
-        if self.image_type != ImageTypeEnum.dermoscopic and self.dermoscopic_type is not None:
-            raise ValueError(
-                f"Image type {self.image_type} inconsistent with dermoscopic type '{self.dermoscopic_type}'."
+        if not self.image_type:
+            raise error_missing_field("dermoscopic_type", "image_type")
+
+        if self.image_type != ImageTypeEnum.dermoscopic:
+            raise error_incompatible_fields(
+                "dermoscopic_type", "image_type", field2_value="dermoscopic"
             )
 
         return self
 
     @model_validator(mode="after")
     def validate_tbp_tile_fields(self) -> "MetadataRow":
-        if self.image_type is None and self.tbp_tile_type is not None:
-            raise ValueError(f"TBP tile type {self.tbp_tile_type} requires an image type.")
+        if not self.tbp_tile_type:
+            return self
 
-        if (
-            self.image_type
-            not in [ImageTypeEnum.tbp_tile_close_up, ImageTypeEnum.tbp_tile_overview]
-            and self.tbp_tile_type is not None
-        ):
-            raise ValueError(
-                f"Image type {self.image_type} inconsistent with TBP tile type '{self.tbp_tile_type}'."
+        if not self.image_type:
+            raise error_missing_field("tbp_tile_type", "image_type")
+
+        if self.image_type not in [
+            ImageTypeEnum.tbp_tile_close_up,
+            ImageTypeEnum.tbp_tile_overview,
+        ]:
+            raise error_incompatible_fields(
+                "tbp_tile_type", "image_type", field2_value=self.image_type.value
             )
 
         return self
