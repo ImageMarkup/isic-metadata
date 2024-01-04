@@ -1,25 +1,8 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
 from importlib.metadata import PackageNotFoundError, version
-
-from isic_metadata.fields import (
-    AcquisitionDay,
-    AnatomSiteGeneral,
-    BenignMalignant,
-    ClinSizeLongDiamMm,
-    ColorTint,
-    DermoscopicType,
-    Diagnosis,
-    DiagnosisConfirmType,
-    ImageType,
-    MelClass,
-    MelMitoticIndex,
-    MelThickMm,
-    MelType,
-    NevusType,
-    Sex,
-    TBPTileType,
-)
+from typing import Any, Literal
 
 try:
     __version__ = version("isic-metadata")
@@ -27,7 +10,22 @@ except PackageNotFoundError:
     # package is not installed
     pass
 
-FIELD_REGISTRY = {}
+
+@dataclass()
+class SearchConfig:
+    key: str
+    es_property: dict[str, Any]
+    es_facet: dict[str, Any]
+
+
+@dataclass()
+class Field:
+    search: SearchConfig | None = None
+    label: str | None = None
+    type: Literal["acquisition", "clinical"] | None = None
+
+
+FIELD_REGISTRY: dict[str, Field] = {}
 
 for field in [
     "blurry",
@@ -38,75 +36,66 @@ for field in [
     "melanocytic",
     "mel_ulcer",
 ]:
-    FIELD_REGISTRY[field] = {
-        "validator": bool,
-        "search": {
-            "key": field,
-            "es_property": {"type": "boolean"},
-            "es_facet": {"terms": {"field": field}},
-        },
-    }
+    FIELD_REGISTRY[field] = Field(
+        search=SearchConfig(
+            key=field,
+            es_property={"type": "boolean"},
+            es_facet={"terms": {"field": field}},
+        )
+    )
 
 
-for field, validator in [
-    ("sex", Sex),
-    ("benign_malignant", BenignMalignant),
-    ("diagnosis_confirm_type", DiagnosisConfirmType),
-    ("nevus_type", NevusType),
-    ("image_type", ImageType),
-    ("dermoscopic_type", DermoscopicType),
-    ("tbp_tile_type", TBPTileType),
-    ("mel_type", MelType),
-    ("mel_class", MelClass),
-    ("mel_mitotic_index", MelMitoticIndex),
-    ("anatom_site_general", AnatomSiteGeneral),
-    ("color_tint", ColorTint),
-    ("patient_id", str),
-    ("lesion_id", str),
+for field in [
+    "sex",
+    "benign_malignant",
+    "diagnosis_confirm_type",
+    "nevus_type",
+    "image_type",
+    "dermoscopic_type",
+    "tbp_tile_type",
+    "mel_type",
+    "mel_class",
+    "mel_mitotic_index",
+    "anatom_site_general",
+    "color_tint",
+    "patient_id",
+    "lesion_id",
 ]:
-    FIELD_REGISTRY[field] = {
-        "validator": validator,
-        "search": {
-            "key": field,
-            "es_property": {"type": "keyword"},
-            "es_facet": {"terms": {"field": field}},
-        },
-    }
+    FIELD_REGISTRY[field] = Field(
+        search=SearchConfig(
+            key=field, es_property={"type": "keyword"}, es_facet={"terms": {"field": field}}
+        )
+    )
+
 
 FIELD_REGISTRY.update(
     {
-        "clin_size_long_diam_mm": {
-            "validator": ClinSizeLongDiamMm,
-            "search": {
-                "key": "clin_size_long_diam_mm",
-                "es_property": {"type": "float"},
-                "es_facet": {
+        "clin_size_long_diam_mm": Field(
+            search=SearchConfig(
+                key="clin_size_long_diam_mm",
+                es_property={"type": "float"},
+                es_facet={
                     "histogram": {
                         "field": "clin_size_long_diam_mm",
                         "interval": 10,
                         "extended_bounds": {"min": 0, "max": 100},
                     }
                 },
-            },
-        },
-        "acquisition_day": {
-            "validator": AcquisitionDay,
-            "search": False,
-        },
-        "diagnosis": {
-            "validator": Diagnosis,
-            "search": {
-                "key": "diagnosis",
-                "es_property": {"type": "keyword"},
-                "es_facet": {"terms": {"field": "diagnosis", "size": 100}},
-            },
-        },
-        "mel_thick_mm": {
-            "validator": MelThickMm,
-            "search": {
-                "key": "mel_thick_mm",
-                "es_property": {"type": "float"},
-                "es_facet": {
+            )
+        ),
+        "acquisition_day": Field(),
+        "diagnosis": Field(
+            search=SearchConfig(
+                key="diagnosis",
+                es_property={"type": "keyword"},
+                es_facet={"terms": {"field": "diagnosis", "size": 100}},
+            )
+        ),
+        "mel_thick_mm": Field(
+            search=SearchConfig(
+                key="mel_thick_mm",
+                es_property={"type": "float"},
+                es_facet={
                     "range": {
                         "field": "mel_thick_mm",
                         "ranges": [
@@ -124,8 +113,8 @@ FIELD_REGISTRY.update(
                         ],
                     }
                 },
-            },
-        },
+            )
+        ),
     }
 )
 
@@ -138,11 +127,11 @@ for field in FIELD_REGISTRY.keys():
         "image_type",
         "marker_pen",
     ]:
-        FIELD_REGISTRY[field]["type"] = "acquisition"
+        FIELD_REGISTRY[field].type = "acquisition"
     else:
-        FIELD_REGISTRY[field]["type"] = "clinical"
+        FIELD_REGISTRY[field].type = "clinical"
 
 for field, label in [
     ("anatom_site_general", "Anatomic Site"),
 ]:
-    FIELD_REGISTRY[field]["label"] = label
+    FIELD_REGISTRY[field].label = label
