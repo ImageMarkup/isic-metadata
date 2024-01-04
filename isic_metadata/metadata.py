@@ -148,6 +148,7 @@ class MetadataRow(BaseModel):
         int, BeforeValidator(Age.handle_85plus), AfterValidator(Age.clamp_upper_bound), Ge(0)
     ] | None = None
     sex: Literal["male", "female"] | None = None
+    anatom_site_general: AnatomSiteGeneralEnum | None = None
     benign_malignant: BenignMalignantEnum | None = None
     diagnosis: DiagnosisEnum | None = None
     diagnosis_confirm_type: DiagnosisConfirmTypeEnum | None = None
@@ -157,25 +158,29 @@ class MetadataRow(BaseModel):
         float, BeforeValidator(ClinSizeLongDiamMm.parse_measurement_str)
     ] | None = None
     melanocytic: bool | None = None
-    patient_id: str | None = None
-    lesion_id: str | None = None
-    acquisition_day: int | None = None
-    marker_pen: bool | None = None
-    hairy: bool | None = None
-    blurry: bool | None = None
-    nevus_type: NevusTypeEnum | None = None
-    image_type: ImageTypeEnum | None = None
-    dermoscopic_type: DermoscopicTypeEnum | None = None
-    tbp_tile_type: TBPTileTypeEnum | None = None
-    anatom_site_general: AnatomSiteGeneralEnum | None = None
-    color_tint: ColorTintEnum | None = None
+
     mel_class: MelClassEnum | None = None
     mel_mitotic_index: MelMitoticIndexEnum | None = None
     mel_thick_mm: Annotated[float, BeforeValidator(MelThickMm.parse_measurement_str)] | None = None
     mel_type: MelTypeEnum | None = None
     mel_ulcer: bool | None = None
 
+    patient_id: str | None = None
+    lesion_id: str | None = None
+    acquisition_day: int | None = None
+
+    nevus_type: NevusTypeEnum | None = None
+    image_type: ImageTypeEnum | None = None
+    dermoscopic_type: DermoscopicTypeEnum | None = None
+    tbp_tile_type: TBPTileTypeEnum | None = None
+
     unstructured: dict[str, Any] = {}
+
+    # Unused and undocumented
+    marker_pen: bool | None = None
+    hairy: bool | None = None
+    blurry: bool | None = None
+    color_tint: ColorTintEnum | None = None
 
     # See https://github.com/samuelcolvin/pydantic/issues/2285 for more detail
     @model_validator(mode="before")
