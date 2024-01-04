@@ -1,4 +1,5 @@
 from typing import Sequence
+
 from isic_metadata.metadata import MetadataRow
 
 

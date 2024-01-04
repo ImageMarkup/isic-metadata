@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from collections import defaultdict
 from typing import Any, Literal
-from annotated_types import Ge
 
+from annotated_types import Ge
 from pydantic import (
     AfterValidator,
     BaseModel,
@@ -33,7 +33,6 @@ from isic_metadata.fields import (
     NevusTypeEnum,
     TBPTileTypeEnum,
 )
-
 
 CUSTOM_MESSAGES = {
     "enum": "Unsupported value for {loc}: '{value}'.",
