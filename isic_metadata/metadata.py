@@ -143,9 +143,12 @@ class MetadataRow(BaseModel):
         extra="forbid",
     )
 
-    age: Annotated[
-        int, BeforeValidator(Age.handle_85plus), AfterValidator(Age.clamp_upper_bound), Ge(0)
-    ] | None = None
+    age: (
+        Annotated[
+            int, BeforeValidator(Age.handle_85plus), AfterValidator(Age.clamp_upper_bound), Ge(0)
+        ]
+        | None
+    ) = None
     sex: Literal["male", "female"] | None = None
     anatom_site_general: AnatomSiteGeneralEnum | None = None
     benign_malignant: BenignMalignantEnum | None = None
@@ -153,9 +156,9 @@ class MetadataRow(BaseModel):
     diagnosis_confirm_type: DiagnosisConfirmTypeEnum | None = None
     personal_hx_mm: bool | None = None
     family_hx_mm: bool | None = None
-    clin_size_long_diam_mm: Annotated[
-        float, BeforeValidator(ClinSizeLongDiamMm.parse_measurement_str)
-    ] | None = None
+    clin_size_long_diam_mm: (
+        Annotated[float, BeforeValidator(ClinSizeLongDiamMm.parse_measurement_str)] | None
+    ) = None
     melanocytic: bool | None = None
 
     mel_class: MelClassEnum | None = None
