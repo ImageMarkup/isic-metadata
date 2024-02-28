@@ -104,3 +104,22 @@ def test_tbp_tile_type_requires_tbp_tile_image_type():
 
     MetadataRow.model_validate({"tbp_tile_type": "2D", "image_type": "TBP tile: close-up"})
     MetadataRow.model_validate({"tbp_tile_type": "2D", "image_type": "TBP tile: overview"})
+
+
+def test_concomitant_biopsy_requires_histopathology():
+    with pytest.raises(ValidationError) as excinfo:
+        MetadataRow.model_validate(
+            {"concomitant_biopsy": True, "diagnosis_confirm_type": "single image expert consensus"}
+        )
+    assert len(excinfo.value.errors()) == 1
+    assert (
+        "concomitant_biopsy requires setting diagnosis_confirm_type"
+        in excinfo.value.errors()[0]["msg"]
+    )
+
+    MetadataRow.model_validate(
+        {"concomitant_biopsy": True, "diagnosis_confirm_type": "histopathology"}
+    )
+    MetadataRow.model_validate(
+        {"concomitant_biopsy": False, "diagnosis_confirm_type": "single image expert consensus"}
+    )

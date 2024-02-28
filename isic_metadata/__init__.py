@@ -35,6 +35,7 @@ for field in [
     "family_hx_mm",
     "melanocytic",
     "mel_ulcer",
+    "concomitant_biopsy",
 ]:
     FIELD_REGISTRY[field] = Field(
         search=SearchConfig(
