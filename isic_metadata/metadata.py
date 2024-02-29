@@ -160,6 +160,7 @@ class MetadataRow(BaseModel):
         Annotated[float, BeforeValidator(ClinSizeLongDiamMm.parse_measurement_str)] | None
     ) = None
     melanocytic: bool | None = None
+    concomitant_biopsy: bool | None = None
 
     mel_class: MelClassEnum | None = None
     mel_mitotic_index: MelMitoticIndexEnum | None = None
@@ -313,6 +314,17 @@ class MetadataRow(BaseModel):
         ]:
             raise error_incompatible_fields(
                 "tbp_tile_type", "image_type", field2_value=self.image_type.value
+            )
+
+        return self
+
+    @model_validator(mode="after")
+    def validate_concomitant_biopsy(self) -> "MetadataRow":
+        if self.concomitant_biopsy and (
+            not self.diagnosis_confirm_type or self.diagnosis_confirm_type != "histopathology"
+        ):
+            raise error_missing_field(
+                "concomitant_biopsy", "diagnosis_confirm_type", field2_value="histopathology"
             )
 
         return self
