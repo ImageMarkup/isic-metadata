@@ -190,7 +190,7 @@ class ColorTintEnum(str, Enum):
     none = "none"
 
 
-class SkinType(str, Enum):
+class FitzpatrickSkinType(str, Enum):
     type_i = "I"
     type_ii = "II"
     type_iii = "III"
