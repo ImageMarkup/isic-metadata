@@ -31,6 +31,7 @@ from isic_metadata.fields import (
     MelThickMm,
     MelTypeEnum,
     NevusTypeEnum,
+    SkinType,
     TBPTileTypeEnum,
 )
 
@@ -159,6 +160,7 @@ class MetadataRow(BaseModel):
     clin_size_long_diam_mm: (
         Annotated[float, BeforeValidator(ClinSizeLongDiamMm.parse_measurement_str)] | None
     ) = None
+    skin_type: SkinType | None = None
     melanocytic: bool | None = None
     concomitant_biopsy: bool | None = None
 
