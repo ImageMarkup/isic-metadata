@@ -188,3 +188,12 @@ class ColorTintEnum(str, Enum):
     blue = "blue"
     pink = "pink"
     none = "none"
+
+
+class SkinType(str, Enum):
+    type_i = "I"
+    type_ii = "II"
+    type_iii = "III"
+    type_iv = "IV"
+    type_v = "V"
+    type_vi = "VI"

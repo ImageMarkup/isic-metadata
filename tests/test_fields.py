@@ -65,6 +65,10 @@ def test_age_special_case():
     assert MetadataRow.model_validate({"age": "85+"}).age == 85
 
 
+def test_skin_type():
+    MetadataRow.model_validate({"skin_type": "I"})
+
+
 def test_benign_malignant():
     MetadataRow.model_validate({"benign_malignant": "benign"})
 
