@@ -61,7 +61,7 @@ for field in [
     "color_tint",
     "patient_id",
     "lesion_id",
-    "skin_type",
+    "fitzpatrick_skin_type",
 ]:
     FIELD_REGISTRY[field] = Field(
         search=SearchConfig(
