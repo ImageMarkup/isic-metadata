@@ -61,17 +61,30 @@ for field in [
     "color_tint",
     "patient_id",
     "lesion_id",
-    "fitzpatrick_skin_type",
 ]:
     FIELD_REGISTRY[field] = Field(
         search=SearchConfig(
-            key=field, es_property={"type": "keyword"}, es_facet={"terms": {"field": field}}
+            key=field,
+            es_property={"type": "keyword"},
+            es_facet={"terms": {"field": field}},
         )
     )
 
 
 FIELD_REGISTRY.update(
     {
+        "fitzpatrick_skin_type": Field(
+            search=SearchConfig(
+                key="fitzpatrick_skin_type",
+                es_property={"type": "keyword"},
+                es_facet={
+                    "terms": {
+                        "field": "fitzpatrick_skin_type",
+                        "order": {"_key": "asc"},
+                    }
+                },
+            )
+        ),
         "clin_size_long_diam_mm": Field(
             search=SearchConfig(
                 key="clin_size_long_diam_mm",
