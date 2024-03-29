@@ -55,6 +55,7 @@ class DiagnosisConfirmTypeEnum(str, Enum):
     serial_imaging_showing_no_change = "serial imaging showing no change"
     single_image_expert_consensus = "single image expert consensus"
     confocal_microscopy_with_consensus_dermoscopy = "confocal microscopy with consensus dermoscopy"
+    single_contributor_clinical_assessment = "single contributor clinical assessment"
 
 
 class DiagnosisEnum(str, Enum):
