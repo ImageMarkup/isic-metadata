@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 from collections import defaultdict
-from typing import Any, Literal
+from typing import Annotated, Any, Literal
 
-from annotated_types import Ge
+from annotated_types import Ge  # noqa: TCH002
 from pydantic import (
     AfterValidator,
     BaseModel,
@@ -14,7 +14,6 @@ from pydantic import (
     model_validator,
 )
 from pydantic_core import ErrorDetails, PydanticCustomError
-from typing_extensions import Annotated
 
 from isic_metadata.fields import (
     Age,
@@ -115,7 +114,7 @@ class MetadataBatch(BaseModel):
     items: list[MetadataRow]
 
     @model_validator(mode="after")
-    def check_patients_lesions(self) -> "MetadataBatch":
+    def check_patients_lesions(self) -> MetadataBatch:
         lesion_to_patients: dict[str, set[str]] = defaultdict(set)
 
         for item in self.items:
@@ -227,7 +226,7 @@ class MetadataRow(BaseModel):
         return v
 
     @model_validator(mode="after")
-    def validate_no_benign_melanoma(self) -> "MetadataRow":
+    def validate_no_benign_melanoma(self) -> MetadataRow:
         if not self.benign_malignant:
             return self
 
@@ -250,13 +249,14 @@ class MetadataRow(BaseModel):
         return self
 
     @model_validator(mode="after")
-    def validate_non_nevus_diagnoses(self) -> "MetadataRow":
+    def validate_non_nevus_diagnoses(self) -> MetadataRow:
         if not self.nevus_type:
             return self
 
         if not self.diagnosis:
             raise error_missing_field("nevus_type", "diagnosis")
-        elif self.diagnosis not in [
+
+        if self.diagnosis not in [
             DiagnosisEnum.nevus,
             DiagnosisEnum.nevus_spilus,
         ]:
@@ -265,7 +265,7 @@ class MetadataRow(BaseModel):
         return self
 
     @model_validator(mode="after")
-    def validate_melanoma_fields(self) -> "MetadataRow":
+    def validate_melanoma_fields(self) -> MetadataRow:
         melanoma_fields: list[str] = [
             "mel_class",
             "mel_mitotic_index",
@@ -280,7 +280,8 @@ class MetadataRow(BaseModel):
 
             if not self.diagnosis:
                 raise error_missing_field(field, "diagnosis", field2_value="melanoma")
-            elif self.diagnosis != "melanoma":
+
+            if self.diagnosis != "melanoma":
                 raise error_incompatible_fields(
                     field, "diagnosis", field2_value=self.diagnosis.value
                 )
@@ -288,7 +289,7 @@ class MetadataRow(BaseModel):
         return self
 
     @model_validator(mode="after")
-    def validate_dermoscopic_fields(self) -> "MetadataRow":
+    def validate_dermoscopic_fields(self) -> MetadataRow:
         if not self.dermoscopic_type:
             return self
 
@@ -303,7 +304,7 @@ class MetadataRow(BaseModel):
         return self
 
     @model_validator(mode="after")
-    def validate_tbp_tile_fields(self) -> "MetadataRow":
+    def validate_tbp_tile_fields(self) -> MetadataRow:
         if not self.tbp_tile_type:
             return self
 
@@ -321,7 +322,7 @@ class MetadataRow(BaseModel):
         return self
 
     @model_validator(mode="after")
-    def validate_concomitant_biopsy(self) -> "MetadataRow":
+    def validate_concomitant_biopsy(self) -> MetadataRow:
         if self.concomitant_biopsy and (
             not self.diagnosis_confirm_type or self.diagnosis_confirm_type != "histopathology"
         ):

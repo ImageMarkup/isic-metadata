@@ -1,6 +1,7 @@
 from typing import Any
 
-from hypothesis import given, strategies as st
+from hypothesis import given
+from hypothesis import strategies as st
 from pydantic import ValidationError
 import pytest
 
@@ -8,18 +9,18 @@ from isic_metadata.metadata import MetadataRow, convert_errors
 
 
 @pytest.mark.parametrize(
-    "field, str_value, parsed_value, dependent_fields",
+    ("field", "str_value", "parsed_value", "dependent_fields"),
     # dependent_fields is a dict of field names to values are there just to satisfy
     # the field validators.
     [
-        ["age", "54", 54, {}],
-        ["melanocytic", "True", True, {}],
-        ["clin_size_long_diam_mm", "4mm", 4.0, {}],
-        ["mel_thick_mm", ".33mm", 0.33, {"diagnosis": "melanoma"}],
-        ["mel_ulcer", "false", False, {"diagnosis": "melanoma"}],
-        ["family_hx_mm", "False", False, {}],
-        ["personal_hx_mm", "0", False, {}],
-        ["acquisition_day", "142", 142, {}],
+        ("age", "54", 54, {}),
+        ("melanocytic", "True", True, {}),
+        ("clin_size_long_diam_mm", "4mm", 4.0, {}),
+        ("mel_thick_mm", ".33mm", 0.33, {"diagnosis": "melanoma"}),
+        ("mel_ulcer", "false", False, {"diagnosis": "melanoma"}),
+        ("family_hx_mm", "False", False, {}),
+        ("personal_hx_mm", "0", False, {}),
+        ("acquisition_day", "142", 142, {}),
     ],
 )
 def test_non_str_types(
@@ -58,7 +59,8 @@ def test_melanoma_fields():
 @given(age=st.integers(min_value=0).map(str))
 def test_age_ceiling(age: str):
     metadata = MetadataRow.model_validate({"age": age})
-    assert metadata.age is not None and metadata.age <= 85
+    assert metadata.age is not None
+    assert metadata.age <= 85
 
 
 def test_age_special_case():
@@ -78,13 +80,13 @@ def test_nevus_diagnosis():
 
 
 @pytest.mark.parametrize(
-    ["raw", "parsed"],
+    ("raw", "parsed"),
     [
-        ["4.5 mm", 4.5],
-        ["14.2   mm", 14.2],
-        ["4.5mm", 4.5],
-        ["1mm", 1.0],
-        ["3.25", 3.25],
+        ("4.5 mm", 4.5),
+        ("14.2   mm", 14.2),
+        ("4.5mm", 4.5),
+        ("1mm", 1.0),
+        ("3.25", 3.25),
     ],
 )
 def test_mel_thick_mm(raw: str, parsed: float):
