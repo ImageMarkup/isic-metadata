@@ -112,8 +112,8 @@ class NevusTypeEnum(str, Enum):
 
 class ImageTypeEnum(str, Enum):
     dermoscopic = "dermoscopic"
-    clinical_close_up = "clinical: close-up"
     clinical_overview = "clinical: overview"
+    clinical_close_up = "clinical: close-up"
     tbp_tile_close_up = "TBP tile: close-up"
     tbp_tile_overview = "TBP tile: overview"
 
