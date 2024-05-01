@@ -41,7 +41,7 @@ class Age:
         return min(value, 85)
 
 
-# todo indeterminable
+# TODO: indeterminable
 class BenignMalignantEnum(str, Enum):
     benign = "benign"
     malignant = "malignant"

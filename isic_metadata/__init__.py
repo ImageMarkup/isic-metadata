@@ -1,14 +1,12 @@
 from __future__ import annotations
 
+import contextlib
 from dataclasses import dataclass
 from importlib.metadata import PackageNotFoundError, version
 from typing import Any, Literal
 
-try:
+with contextlib.suppress(PackageNotFoundError):
     __version__ = version("isic-metadata")
-except PackageNotFoundError:
-    # package is not installed
-    pass
 
 
 @dataclass()
@@ -133,7 +131,7 @@ FIELD_REGISTRY.update(
     }
 )
 
-for field in FIELD_REGISTRY.keys():
+for field in FIELD_REGISTRY:
     if field in [
         "blurry",
         "color_tint",
