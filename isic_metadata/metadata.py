@@ -133,6 +133,28 @@ class MetadataBatch(BaseModel):
 
         return self
 
+    @model_validator(mode="after")
+    def check_rcm_at_most_one_macroscopic_image(self) -> MetadataBatch:
+        rcm_case_to_macroscopic: dict[str, int] = defaultdict(int)
+
+        for item in self.items:
+            if item.rcm_case_id and item.image_type == ImageTypeEnum.rcm_macroscopic:
+                rcm_case_to_macroscopic[item.rcm_case_id] += 1
+
+        bad_rcm_cases = [
+            rcm_case
+            for rcm_case in rcm_case_to_macroscopic
+            if rcm_case_to_macroscopic[rcm_case] > 1
+        ]
+        if bad_rcm_cases:
+            raise PydanticCustomError(
+                "rcm_multiple_macroscopics",
+                "One or more RCM cases have multiple macroscopic images.",
+                {"examples": bad_rcm_cases[:5]},
+            )
+
+        return self
+
 
 class MetadataRow(BaseModel):
     model_config = ConfigDict(
@@ -177,6 +199,8 @@ class MetadataRow(BaseModel):
     image_type: ImageTypeEnum | None = None
     dermoscopic_type: DermoscopicTypeEnum | None = None
     tbp_tile_type: TBPTileTypeEnum | None = None
+
+    rcm_case_id: str | None = None
 
     unstructured: dict[str, Any] = {}
 
@@ -285,6 +309,21 @@ class MetadataRow(BaseModel):
                 raise error_incompatible_fields(
                     field, "diagnosis", field2_value=self.diagnosis.value
                 )
+
+        return self
+
+    @model_validator(mode="after")
+    def validate_rcm_fields(self) -> MetadataRow:
+        if not self.rcm_case_id:
+            return self
+
+        if not self.image_type:
+            raise error_missing_field("rcm_case_id", "image_type")
+
+        if self.image_type != ImageTypeEnum.rcm_macroscopic:
+            raise error_incompatible_fields(
+                "rcm_case_id", "image_type", field2_value=ImageTypeEnum.rcm_macroscopic
+            )
 
         return self
 
