@@ -32,3 +32,22 @@ def test_blank_lesions_dont_belong_to_same_patient():
             MetadataRow(lesion_id="", patient_id="barpatient"),
         ]
     )
+
+
+def test_rcm_case_has_at_most_one_macroscopic_image():
+    with pytest.raises(ValidationError) as excinfo:
+        MetadataBatch(
+            items=[
+                MetadataRow(image_type="RCM: macroscopic", rcm_case_id="foo"),
+                MetadataRow(image_type="RCM: macroscopic", rcm_case_id="foo"),
+            ]
+        )
+    assert len(excinfo.value.errors()) == 1
+    assert "have multiple macroscopic images" in excinfo.value.errors()[0]["msg"]
+
+    MetadataBatch(
+        items=[
+            MetadataRow(image_type="RCM: macroscopic", rcm_case_id="foo"),
+            MetadataRow(image_type="RCM: macroscopic", rcm_case_id="bar"),
+        ]
+    )

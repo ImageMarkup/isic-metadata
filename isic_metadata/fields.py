@@ -116,6 +116,7 @@ class ImageTypeEnum(str, Enum):
     clinical_close_up = "clinical: close-up"
     tbp_tile_close_up = "TBP tile: close-up"
     tbp_tile_overview = "TBP tile: overview"
+    rcm_macroscopic = "RCM: macroscopic"
 
 
 class DermoscopicTypeEnum(str, Enum):

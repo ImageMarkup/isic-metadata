@@ -86,6 +86,15 @@ def test_dermoscopic_type_requires_dermoscopic_image_type():
     assert "dermoscopic_type is incompatible with image_type" in excinfo.value.errors()[0]["msg"]
 
 
+def test_rcm_case_id_requires_rcm_image_type():
+    with pytest.raises(ValidationError) as excinfo:
+        MetadataRow.model_validate({"rcm_case_id": "12345"})
+    assert len(excinfo.value.errors()) == 1
+    assert "rcm_case_id requires setting image_type" in excinfo.value.errors()[0]["msg"]
+
+    MetadataRow.model_validate({"rcm_case_id": "12345", "image_type": "RCM: macroscopic"})
+
+
 def test_tbp_tile_type_requires_image_type_tbp_tile():
     with pytest.raises(ValidationError) as excinfo:
         MetadataRow.model_validate({"tbp_tile_type": "2D"})
