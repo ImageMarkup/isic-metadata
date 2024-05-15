@@ -116,7 +116,9 @@ class ImageTypeEnum(str, Enum):
     clinical_close_up = "clinical: close-up"
     tbp_tile_close_up = "TBP tile: close-up"
     tbp_tile_overview = "TBP tile: overview"
+    # Note that RCM types need to be added to validate_rcm_fields
     rcm_macroscopic = "RCM: macroscopic"
+    rcm_tile = "RCM: tile"
 
 
 class DermoscopicTypeEnum(str, Enum):
