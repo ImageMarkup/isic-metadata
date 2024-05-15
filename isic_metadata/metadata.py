@@ -364,7 +364,7 @@ class MetadataRow(BaseModel):
         if not self.image_type:
             raise error_missing_field("rcm_case_id", "image_type")
 
-        if self.image_type != ImageTypeEnum.rcm_macroscopic:
+        if self.image_type not in [ImageTypeEnum.rcm_macroscopic, ImageTypeEnum.rcm_tile]:
             raise error_incompatible_fields(
                 "rcm_case_id", "image_type", field2_value=ImageTypeEnum.rcm_macroscopic
             )

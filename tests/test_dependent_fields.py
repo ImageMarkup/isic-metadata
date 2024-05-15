@@ -92,7 +92,7 @@ def test_rcm_case_id_requires_rcm_image_type():
     assert len(excinfo.value.errors()) == 1
     assert "rcm_case_id requires setting image_type" in excinfo.value.errors()[0]["msg"]
 
-    MetadataRow.model_validate({"rcm_case_id": "12345", "image_type": "RCM: macroscopic"})
+    MetadataRow.model_validate({"rcm_case_id": "12345", "image_type": "RCM: tile"})
 
 
 def test_rcm_model_checks_disabling():
