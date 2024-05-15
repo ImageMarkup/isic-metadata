@@ -51,3 +51,28 @@ def test_rcm_case_has_at_most_one_macroscopic_image():
             MetadataRow(image_type="RCM: macroscopic", rcm_case_id="bar"),
         ]
     )
+
+
+def test_rcm_cases_belong_to_same_lesion():
+    with pytest.raises(ValidationError) as excinfo:
+        MetadataBatch(
+            items=[
+                MetadataRow(
+                    rcm_case_id="foo", lesion_id="foolesion", _ignore_rcm_model_checks=True
+                ),
+                MetadataRow(
+                    rcm_case_id="foo", lesion_id="barlesion", _ignore_rcm_model_checks=True
+                ),
+            ]
+        )
+    assert len(excinfo.value.errors()) == 1
+    assert "belong to multiple lesions" in excinfo.value.errors()[0]["msg"]
+
+
+def test_blank_rcm_cases_dont_belong_to_same_lesion():
+    MetadataBatch(
+        items=[
+            MetadataRow(rcm_case_id="", lesion_id="foolesion"),
+            MetadataRow(rcm_case_id="", lesion_id="barlesion"),
+        ]
+    )
