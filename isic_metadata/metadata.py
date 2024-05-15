@@ -34,6 +34,15 @@ from isic_metadata.fields import (
     TBPTileTypeEnum,
 )
 
+"""
+IGNORE_RCM_MODEL_CHECKS is a special attribute that allows disabling RCM model checks. It's
+provided to allow batch checks to be performed on a set of metadata rows, some of which may
+not be valid on a row level. e.g. if a batch of metadata rows contains RCM case ids that are
+inconsistent with lesion ids, that ought to be validated even if the row with an RCM case id
+has a missing image_type for instance.
+"""
+IGNORE_RCM_MODEL_CHECKS = "_ignore_rcm_model_checks"
+
 CUSTOM_MESSAGES = {
     "enum": "Unsupported value for {loc}: '{value}'.",
     "int_parsing": "Unable to parse value as an integer.",
@@ -210,6 +219,18 @@ class MetadataRow(BaseModel):
     blurry: bool | None = None
     color_tint: ColorTintEnum | None = None
 
+    __slots__ = (IGNORE_RCM_MODEL_CHECKS,)
+
+    # see https://github.com/pydantic/pydantic/issues/655#issuecomment-570312649 for details on
+    # implementing a private property to be used internally.
+    def __init__(self, **kwargs) -> None:
+        object.__setattr__(self, IGNORE_RCM_MODEL_CHECKS, False)
+
+        if IGNORE_RCM_MODEL_CHECKS in kwargs:
+            object.__setattr__(self, IGNORE_RCM_MODEL_CHECKS, kwargs.pop(IGNORE_RCM_MODEL_CHECKS))
+
+        super().__init__(**kwargs)
+
     # See https://github.com/samuelcolvin/pydantic/issues/2285 for more detail
     @model_validator(mode="before")
     @classmethod
@@ -314,6 +335,9 @@ class MetadataRow(BaseModel):
 
     @model_validator(mode="after")
     def validate_rcm_fields(self) -> MetadataRow:
+        if getattr(self, IGNORE_RCM_MODEL_CHECKS):
+            return self
+
         if not self.rcm_case_id:
             return self
 

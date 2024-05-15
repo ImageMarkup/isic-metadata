@@ -95,6 +95,15 @@ def test_rcm_case_id_requires_rcm_image_type():
     MetadataRow.model_validate({"rcm_case_id": "12345", "image_type": "RCM: macroscopic"})
 
 
+def test_rcm_model_checks_disabling():
+    with pytest.raises(ValidationError) as excinfo:
+        MetadataRow(rcm_case_id="12345")
+    assert len(excinfo.value.errors()) == 1
+    assert "rcm_case_id requires setting image_type" in excinfo.value.errors()[0]["msg"]
+
+    MetadataRow(rcm_case_id="12345", _ignore_rcm_model_checks=True)
+
+
 def test_tbp_tile_type_requires_image_type_tbp_tile():
     with pytest.raises(ValidationError) as excinfo:
         MetadataRow.model_validate({"tbp_tile_type": "2D"})
