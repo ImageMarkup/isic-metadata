@@ -164,6 +164,26 @@ class MetadataBatch(BaseModel):
 
         return self
 
+    @model_validator(mode="after")
+    def check_rcm_case_at_most_one_lesion(self) -> MetadataBatch:
+        rcm_case_to_lesions: dict[str, set[str]] = defaultdict(set)
+
+        for item in self.items:
+            if item.rcm_case_id and item.lesion_id:
+                rcm_case_to_lesions[item.rcm_case_id].add(item.lesion_id)
+
+        bad_rcm_cases = [
+            rcm_case for rcm_case in rcm_case_to_lesions if len(rcm_case_to_lesions[rcm_case]) > 1
+        ]
+        if bad_rcm_cases:
+            raise PydanticCustomError(
+                "one_rcm_case_multiple_lesions",
+                "One or more RCM cases belong to multiple lesions.",
+                {"examples": bad_rcm_cases[:5]},
+            )
+
+        return self
+
 
 class MetadataRow(BaseModel):
     model_config = ConfigDict(
