@@ -42,6 +42,9 @@ ignore = [
   # Excessive
   "RET503", # implict return
   "PLR2004", # magic value used in comparison
+
+  "TCH003",  # type checking blocks
+
 ]
 
 [tool.ruff.lint.per-file-ignores]

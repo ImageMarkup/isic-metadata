@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections import defaultdict
+from decimal import Decimal
 from typing import Annotated, Any, Literal
 
 from annotated_types import Ge  # noqa: TCH002
@@ -47,7 +48,7 @@ CUSTOM_MESSAGES = {
     "enum": "Unsupported value for {loc}: '{value}'.",
     "int_parsing": "Unable to parse value as an integer.",
     "bool_parsing": "Unable to parse value as a boolean.",
-    "float_parsing": "Unable to parse value as a number.",
+    "decimal_parsing": "Unable to parse value as a number.",
     "greater_than_equal": "Number must be greater than or equal to {ge}.",
 }
 
@@ -208,7 +209,7 @@ class MetadataRow(BaseModel):
     personal_hx_mm: bool | None = None
     family_hx_mm: bool | None = None
     clin_size_long_diam_mm: (
-        Annotated[float, BeforeValidator(ClinSizeLongDiamMm.parse_measurement_str)] | None
+        Annotated[Decimal, BeforeValidator(ClinSizeLongDiamMm.parse_measurement_str)] | None
     ) = None
     fitzpatrick_skin_type: FitzpatrickSkinType | None = None
     melanocytic: bool | None = None
@@ -216,7 +217,9 @@ class MetadataRow(BaseModel):
 
     mel_class: MelClassEnum | None = None
     mel_mitotic_index: MelMitoticIndexEnum | None = None
-    mel_thick_mm: Annotated[float, BeforeValidator(MelThickMm.parse_measurement_str)] | None = None
+    mel_thick_mm: Annotated[Decimal, BeforeValidator(MelThickMm.parse_measurement_str)] | None = (
+        None
+    )
     mel_type: MelTypeEnum | None = None
     mel_ulcer: bool | None = None
 

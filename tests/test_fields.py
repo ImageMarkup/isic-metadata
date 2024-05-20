@@ -1,3 +1,4 @@
+from decimal import Decimal
 from typing import Any
 
 from hypothesis import given
@@ -15,8 +16,8 @@ from isic_metadata.metadata import MetadataRow, convert_errors
     [
         ("age", "54", 54, {}),
         ("melanocytic", "True", True, {}),
-        ("clin_size_long_diam_mm", "4mm", 4.0, {}),
-        ("mel_thick_mm", ".33mm", 0.33, {"diagnosis": "melanoma"}),
+        ("clin_size_long_diam_mm", "4mm", Decimal("4.0"), {}),
+        ("mel_thick_mm", ".33mm", Decimal("0.33"), {"diagnosis": "melanoma"}),
         ("mel_ulcer", "false", False, {"diagnosis": "melanoma"}),
         ("family_hx_mm", "False", False, {}),
         ("personal_hx_mm", "0", False, {}),
@@ -82,11 +83,11 @@ def test_nevus_diagnosis():
 @pytest.mark.parametrize(
     ("raw", "parsed"),
     [
-        ("4.5 mm", 4.5),
-        ("14.2   mm", 14.2),
-        ("4.5mm", 4.5),
-        ("1mm", 1.0),
-        ("3.25", 3.25),
+        ("4.5 mm", Decimal("4.5")),
+        ("14.2   mm", Decimal("14.2")),
+        ("4.5mm", Decimal("4.5")),
+        ("1mm", Decimal("1.0")),
+        ("3.25", Decimal("3.25")),
     ],
 )
 def test_mel_thick_mm(raw: str, parsed: float):
@@ -102,13 +103,16 @@ def test_mel_thick_mm_invalid():
 
 
 @given(
-    clin_size=st.one_of(st.floats(min_value=0, exclude_min=True), st.integers(min_value=1)).map(
-        lambda x: f"{x} mm"
-    )
+    clin_size=st.one_of(
+        # keep max values bounded so they don't generate larger than representable decimals.
+        # disallow infinity to avoid the string 'inf'.
+        st.floats(min_value=0, max_value=1_000_000, exclude_min=True, allow_infinity=False),
+        st.integers(min_value=1, max_value=1_000),
+    ).map(lambda x: f"{x} mm")
 )
 def test_clin_size_long_diam_mm_always_rounded(clin_size: str):
     metadata = MetadataRow.model_validate({"clin_size_long_diam_mm": clin_size})
-    assert isinstance(metadata.clin_size_long_diam_mm, float)
+    assert isinstance(metadata.clin_size_long_diam_mm, Decimal)
     assert metadata.clin_size_long_diam_mm == round(metadata.clin_size_long_diam_mm, ndigits=1)
 
 
