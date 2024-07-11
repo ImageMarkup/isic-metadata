@@ -119,6 +119,7 @@ class ImageTypeEnum(str, Enum):
     # Note that RCM types need to be added to validate_rcm_fields
     rcm_macroscopic = "RCM: macroscopic"
     rcm_tile = "RCM: tile"
+    rcm_mosaic = "RCM: mosaic"
 
 
 class DermoscopicTypeEnum(str, Enum):
