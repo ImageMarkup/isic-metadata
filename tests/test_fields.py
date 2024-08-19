@@ -6,6 +6,7 @@ from hypothesis import strategies as st
 from pydantic import ValidationError
 import pytest
 
+from isic_metadata.diagnosis_hierarchical import DiagnosisEnum
 from isic_metadata.metadata import MetadataRow, convert_errors
 
 
@@ -17,8 +18,8 @@ from isic_metadata.metadata import MetadataRow, convert_errors
         ("age", "54", 54, {}),
         ("melanocytic", "True", True, {}),
         ("clin_size_long_diam_mm", "4mm", Decimal("4.0"), {}),
-        ("mel_thick_mm", ".33mm", Decimal("0.33"), {"diagnosis": "melanoma"}),
-        ("mel_ulcer", "false", False, {"diagnosis": "melanoma"}),
+        ("mel_thick_mm", ".33mm", Decimal("0.33"), {"diagnosis": "Melanoma Invasive"}),
+        ("mel_ulcer", "false", False, {"diagnosis": "Melanoma Invasive"}),
         ("family_hx_mm", "False", False, {}),
         ("personal_hx_mm", "0", False, {}),
         ("acquisition_day", "142", 142, {}),
@@ -35,26 +36,27 @@ def test_non_str_types(
 
 @pytest.mark.parametrize(("emptyish_value"), ["", " ", "\t", None])
 def test_empty_fields_are_omitted(emptyish_value: Any):
-    metadata = MetadataRow.model_validate({"diagnosis": "melanoma", "mel_type": emptyish_value})
-    assert metadata.diagnosis == "melanoma"
+    metadata = MetadataRow.model_validate({"diagnosis": "Benign", "mel_type": emptyish_value})
+    assert metadata.diagnosis == "Benign"
     assert metadata.mel_thick_mm is None
 
 
 def test_unstructured_fields():
-    metadata = MetadataRow.model_validate({"diagnosis": "melanoma", "hello": "world"})
-    assert metadata.diagnosis == "melanoma"
+    metadata = MetadataRow.model_validate({"diagnosis": "Benign", "hello": "world"})
+    assert metadata.diagnosis == "Benign"
     assert metadata.unstructured["hello"] == "world"
 
 
-def test_melanoma_fields():
+@pytest.mark.parametrize(("melanoma_diagnosis"), DiagnosisEnum._melanoma_diagnoses())
+def test_melanoma_fields(melanoma_diagnosis: str):
     with pytest.raises(ValidationError) as excinfo:
         # mel_class can only be set if diagnosis is melanoma
-        MetadataRow.model_validate({"diagnosis": "angioma", "mel_class": "invasive melanoma"})
+        MetadataRow.model_validate({"diagnosis": "Benign", "mel_class": "invasive melanoma"})
     assert len(excinfo.value.errors()) == 1
     assert "mel_class is incompatible with diagnosis" in excinfo.value.errors()[0]["msg"]
 
     # mel_class can only be set if diagnosis is melanoma
-    MetadataRow.model_validate({"diagnosis": "melanoma", "mel_class": "invasive melanoma"})
+    MetadataRow.model_validate({"diagnosis": melanoma_diagnosis, "mel_class": "invasive melanoma"})
 
 
 @given(age=st.integers(min_value=0).map(str))
@@ -76,8 +78,9 @@ def test_benign_malignant():
     MetadataRow.model_validate({"benign_malignant": "benign"})
 
 
-def test_nevus_diagnosis():
-    MetadataRow.model_validate({"diagnosis": "nevus", "nevus_type": "blue"})
+@pytest.mark.parametrize(("nevus_diagnosis"), DiagnosisEnum._nevus_diagnoses())
+def test_nevus_diagnosis(nevus_diagnosis: str):
+    MetadataRow.model_validate({"diagnosis": nevus_diagnosis, "nevus_type": "blue"})
 
 
 @pytest.mark.parametrize(
@@ -91,7 +94,7 @@ def test_nevus_diagnosis():
     ],
 )
 def test_mel_thick_mm(raw: str, parsed: float):
-    metadata = MetadataRow.model_validate({"diagnosis": "melanoma", "mel_thick_mm": raw})
+    metadata = MetadataRow.model_validate({"diagnosis": "Melanoma Invasive", "mel_thick_mm": raw})
     assert metadata.mel_thick_mm == parsed
 
 
@@ -121,3 +124,29 @@ def test_clin_size_long_diam_mm_invalid():
         MetadataRow.model_validate({"clin_size_long_diam_mm": "foo"})
     assert len(excinfo.value.errors()) == 1
     assert "Unable to parse value as a number" in convert_errors(excinfo.value)[0]["msg"]
+
+
+@pytest.mark.parametrize(
+    ("raw", "parsed"),
+    [
+        ("Benign", "Benign"),
+        ("Benign - Other", "Benign:Benign - Other"),
+        ("Blue nevus", "Benign:Benign melanocytic proliferations:Nevus:Blue nevus"),
+        (
+            "Squamous cell carcinoma, NOS",
+            "Malignant:Malignant epidermal proliferations:Squamous cell carcinoma, NOS",
+        ),
+        (
+            "Blue nevus, Sclerosing",
+            "Benign:Benign melanocytic proliferations:Nevus:Blue nevus:Blue nevus, Sclerosing",
+        ),
+    ],
+)
+def test_diagnosis(raw, parsed):
+    metadata = MetadataRow.model_validate({"diagnosis": raw})
+    assert metadata.diagnosis == parsed, str(metadata.diagnosis)
+
+
+def test_diagnosis_enum_has_unique_terminal_values():
+    terminal_nodes = [member.value.split(":")[-1] for member in DiagnosisEnum]
+    assert len(terminal_nodes) == len(set(terminal_nodes))

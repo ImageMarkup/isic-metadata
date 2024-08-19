@@ -3,27 +3,29 @@ from typing import Any
 from pydantic import ValidationError
 import pytest
 
+from isic_metadata.diagnosis_hierarchical import DiagnosisEnum
 from isic_metadata.metadata import MetadataRow
 
 
-def test_diagnosis_no_benign_melanoma():
+@pytest.mark.parametrize(("melanoma_diagnosis"), DiagnosisEnum._melanoma_diagnoses())
+def test_diagnosis_no_benign_melanoma(melanoma_diagnosis: str):
     with pytest.raises(ValidationError) as excinfo:
-        MetadataRow.model_validate({"diagnosis": "melanoma", "benign_malignant": "benign"})
+        MetadataRow.model_validate({"diagnosis": melanoma_diagnosis, "benign_malignant": "benign"})
     assert len(excinfo.value.errors()) == 1
-    assert "melanoma is incompatible with benign_malignant" in excinfo.value.errors()[0]["msg"]
+    assert " is incompatible with benign_malignant" in excinfo.value.errors()[0]["msg"]
 
 
 @pytest.mark.parametrize("benign_malignant", ["malignant", "indeterminate/malignant"])
 def test_diagnosis_no_malignant_nevus(benign_malignant: str):
     with pytest.raises(ValidationError) as excinfo:
-        MetadataRow.model_validate({"diagnosis": "nevus", "benign_malignant": benign_malignant})
+        MetadataRow.model_validate({"diagnosis": "Nevus", "benign_malignant": benign_malignant})
     assert len(excinfo.value.errors()) == 1
-    assert "nevus is incompatible with benign_malignant" in excinfo.value.errors()[0]["msg"]
+    assert " is incompatible with benign_malignant" in excinfo.value.errors()[0]["msg"]
 
 
 @pytest.mark.parametrize(
     ("diagnosis", "error_message"),
-    [(None, "requires setting diagnosis"), ("melanoma", "is incompatible with diagnosis")],
+    [(None, "requires setting diagnosis"), ("Melanoma Invasive", "is incompatible with diagnosis")],
 )
 def test_nevus_type_needs_nevus_diagnosis(diagnosis: str | None, error_message: str):
     with pytest.raises(ValidationError) as excinfo:
@@ -32,7 +34,7 @@ def test_nevus_type_needs_nevus_diagnosis(diagnosis: str | None, error_message: 
     assert f"nevus_type {error_message}" in excinfo.value.errors()[0]["msg"]
 
 
-@pytest.mark.parametrize("diagnosis", [None, "basal cell carcinoma"])
+@pytest.mark.parametrize("diagnosis", [None, "Basal cell carcinoma"])
 @pytest.mark.parametrize(
     ("field_name", "field_value"),
     [
@@ -51,7 +53,7 @@ def test_melanoma_fields_require_melanoma_diagnosis(
     assert len(excinfo.value.errors()) == 1
     assert field_name in excinfo.value.errors()[0]["msg"]
 
-    MetadataRow.model_validate({field_name: field_value, "diagnosis": "melanoma"})
+    MetadataRow.model_validate({field_name: field_value, "diagnosis": "Melanoma Invasive"})
 
 
 @pytest.mark.skip("TODO: https://github.com/ImageMarkup/tracker/issues/141")
@@ -62,7 +64,7 @@ def test_diagnosis_confirm_type_requires_diagnosis():
     assert excinfo.value.errors()[0]["loc"][0] == "diagnosis_confirm_type"
 
     MetadataRow.model_validate(
-        {"diagnosis": "melanoma", "diagnosis_confirm_type": "histopathology"}
+        {"diagnosis": "Melanoma Invasive", "diagnosis_confirm_type": "histopathology"}
     )
 
 

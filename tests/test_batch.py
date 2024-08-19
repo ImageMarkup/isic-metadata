@@ -7,8 +7,8 @@ from isic_metadata.metadata import MetadataBatch, MetadataRow
 def test_batch():
     MetadataBatch(
         items=[
-            MetadataRow.model_validate({"diagnosis": "melanoma"}),
-            MetadataRow.model_validate({"diagnosis": "melanoma"}),
+            MetadataRow.model_validate({"sex": "male"}),
+            MetadataRow.model_validate({"sex": "male"}),
         ]
     )
 
