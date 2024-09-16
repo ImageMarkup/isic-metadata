@@ -33,6 +33,15 @@ setup(
     ],
     python_requires=">=3.10",
     install_requires=["pydantic>=2.4"],
+    extras_require={
+        "test": [
+            "coverage[toml]",
+            "hypothesis",
+            "pytest",
+            "pytest-mock",
+            "pytest-cov",
+        ],
+    },
     packages=find_packages(),
     # needed to py.typed
     include_package_data=True,
