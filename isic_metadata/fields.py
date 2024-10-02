@@ -4,6 +4,8 @@ from enum import Enum
 import re
 from typing import Any
 
+from isic_metadata.diagnosis_hierarchical import DiagnosisEnum  # noqa: F401
+
 
 class ClinSizeLongDiamMm:
     @classmethod
@@ -58,7 +60,7 @@ class DiagnosisConfirmTypeEnum(str, Enum):
     single_contributor_clinical_assessment = "single contributor clinical assessment"
 
 
-class DiagnosisEnum(str, Enum):
+class LegacyDxEnum(str, Enum):
     actinic_keratosis = "actinic keratosis"
     adnexal_tumor = "adnexal tumor"
     aimp = "AIMP"

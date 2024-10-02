@@ -27,6 +27,7 @@ from isic_metadata.fields import (
     DiagnosisEnum,
     FitzpatrickSkinType,
     ImageTypeEnum,
+    LegacyDxEnum,
     MelClassEnum,
     MelMitoticIndexEnum,
     MelThickMm,
@@ -204,7 +205,14 @@ class MetadataRow(BaseModel):
     sex: Literal["male", "female"] | None = None
     anatom_site_general: AnatomSiteGeneralEnum | None = None
     benign_malignant: BenignMalignantEnum | None = None
-    diagnosis: DiagnosisEnum | None = None
+    diagnosis: (
+        Annotated[
+            DiagnosisEnum,
+            BeforeValidator(DiagnosisEnum.accept_terminal_values),
+        ]
+        | None
+    ) = None
+    legacy_dx: LegacyDxEnum | None = None
     diagnosis_confirm_type: DiagnosisConfirmTypeEnum | None = None
     personal_hx_mm: bool | None = None
     family_hx_mm: bool | None = None
@@ -298,8 +306,8 @@ class MetadataRow(BaseModel):
         if not self.benign_malignant:
             return self
 
-        if (self.diagnosis == "melanoma" and self.benign_malignant == "benign") or (
-            self.diagnosis == "nevus"
+        if (DiagnosisEnum.is_melanoma(self.diagnosis) and self.benign_malignant == "benign") or (
+            DiagnosisEnum.is_nevus(self.diagnosis)
             and self.benign_malignant
             not in [
                 BenignMalignantEnum.benign,
@@ -324,10 +332,7 @@ class MetadataRow(BaseModel):
         if not self.diagnosis:
             raise error_missing_field("nevus_type", "diagnosis")
 
-        if self.diagnosis not in [
-            DiagnosisEnum.nevus,
-            DiagnosisEnum.nevus_spilus,
-        ]:
+        if not DiagnosisEnum.is_nevus(self.diagnosis):
             raise error_incompatible_fields("nevus_type", "diagnosis", field2_value=self.diagnosis)
 
         return self
@@ -347,9 +352,9 @@ class MetadataRow(BaseModel):
                 continue
 
             if not self.diagnosis:
-                raise error_missing_field(field, "diagnosis", field2_value="melanoma")
+                raise error_missing_field(field, "diagnosis", field2_value=self.diagnosis)
 
-            if self.diagnosis != "melanoma":
+            if not DiagnosisEnum.is_melanoma(self.diagnosis):
                 raise error_incompatible_fields(
                     field, "diagnosis", field2_value=self.diagnosis.value
                 )

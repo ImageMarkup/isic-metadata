@@ -105,6 +105,13 @@ FIELD_REGISTRY.update(
                 es_facet={"terms": {"field": "diagnosis", "size": 100}},
             )
         ),
+        "legacy_dx": Field(
+            search=SearchConfig(
+                key="legacy_dx",
+                es_property={"type": "keyword"},
+                es_facet={"terms": {"field": "legacy_dx", "size": 100}},
+            )
+        ),
         "mel_thick_mm": Field(
             search=SearchConfig(
                 key="mel_thick_mm",
