@@ -10,7 +10,9 @@ from pydantic import (
     BaseModel,
     BeforeValidator,
     ConfigDict,
+    Field,
     ValidationError,
+    computed_field,
     field_validator,
     model_validator,
 )
@@ -211,7 +213,7 @@ class MetadataRow(BaseModel):
             BeforeValidator(DiagnosisEnum.accept_terminal_values),
         ]
         | None
-    ) = None
+    ) = Field(default=None, exclude=True)  # never expose the fully qualified diagnosis
     legacy_dx: LegacyDxEnum | None = None
     diagnosis_confirm_type: DiagnosisConfirmTypeEnum | None = None
     personal_hx_mm: bool | None = None
@@ -249,6 +251,26 @@ class MetadataRow(BaseModel):
     hairy: bool | None = None
     blurry: bool | None = None
     color_tint: ColorTintEnum | None = None
+
+    @computed_field
+    def diagnosis_1(self) -> str | None:
+        return DiagnosisEnum.levels(self.diagnosis)[0] if self.diagnosis else None
+
+    @computed_field
+    def diagnosis_2(self) -> str | None:
+        return DiagnosisEnum.levels(self.diagnosis)[1] if self.diagnosis else None
+
+    @computed_field
+    def diagnosis_3(self) -> str | None:
+        return DiagnosisEnum.levels(self.diagnosis)[2] if self.diagnosis else None
+
+    @computed_field
+    def diagnosis_4(self) -> str | None:
+        return DiagnosisEnum.levels(self.diagnosis)[3] if self.diagnosis else None
+
+    @computed_field
+    def diagnosis_5(self) -> str | None:
+        return DiagnosisEnum.levels(self.diagnosis)[4] if self.diagnosis else None
 
     __slots__ = (IGNORE_RCM_MODEL_CHECKS,)
 

@@ -873,6 +873,24 @@ class DiagnosisEnum(str, Enum):
     malignant_malignant_melanocytic_proliferations_melanoma_melanoma_invasive_melanoma_invasive_blue_nevus_like_melanoma_invasive_originating_from_blue_nevus = "Malignant:Malignant melanocytic proliferations (Melanoma):Melanoma Invasive:Melanoma Invasive, Blue nevus-like:Melanoma Invasive, originating from blue nevus"
     malignant_malignant_melanocytic_proliferations_melanoma_melanoma_invasive_melanoma_invasive_heavily_pigmented_melanoma_invasive_heavily_pigmented_resembling_epithelioid_blue_nevus_or_melanoma_developing_in_animals = "Malignant:Malignant melanocytic proliferations (Melanoma):Melanoma Invasive:Melanoma Invasive, Heavily pigmented:Melanoma Invasive, Heavily pigmented, resembling epithelioid blue nevus or melanoma developing in animals"
 
+    @staticmethod
+    @cache
+    def levels(value: str) -> list[str | None]:
+        levels_list = value.split(":")
+        levels_list += [None] * (5 - len(levels_list))
+        return levels_list
+
+    @staticmethod
+    @cache
+    def as_dict(value: str) -> dict[str, str | None]:
+        return {
+            "diagnosis_1": DiagnosisEnum.levels(value)[0],
+            "diagnosis_2": DiagnosisEnum.levels(value)[1],
+            "diagnosis_3": DiagnosisEnum.levels(value)[2],
+            "diagnosis_4": DiagnosisEnum.levels(value)[3],
+            "diagnosis_5": DiagnosisEnum.levels(value)[4],
+        }
+
     @classmethod
     @cache
     def reverse_ordered_hierarchy(cls) -> list[str]:
