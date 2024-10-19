@@ -105,6 +105,41 @@ FIELD_REGISTRY.update(
                 es_facet={"terms": {"field": "diagnosis", "size": 100}},
             )
         ),
+        "diagnosis_1": Field(
+            search=SearchConfig(
+                key="diagnosis_1",
+                es_property={"type": "keyword"},
+                es_facet={"terms": {"field": "diagnosis_1", "size": 100}},
+            )
+        ),
+        "diagnosis_2": Field(
+            search=SearchConfig(
+                key="diagnosis_2",
+                es_property={"type": "keyword"},
+                es_facet={"terms": {"field": "diagnosis_2", "size": 100}},
+            )
+        ),
+        "diagnosis_3": Field(
+            search=SearchConfig(
+                key="diagnosis_3",
+                es_property={"type": "keyword"},
+                es_facet={"terms": {"field": "diagnosis_3", "size": 100}},
+            )
+        ),
+        "diagnosis_4": Field(
+            search=SearchConfig(
+                key="diagnosis_4",
+                es_property={"type": "keyword"},
+                es_facet={"terms": {"field": "diagnosis_4", "size": 100}},
+            )
+        ),
+        "diagnosis_5": Field(
+            search=SearchConfig(
+                key="diagnosis_5",
+                es_property={"type": "keyword"},
+                es_facet={"terms": {"field": "diagnosis_5", "size": 100}},
+            )
+        ),
         "legacy_dx": Field(
             search=SearchConfig(
                 key="legacy_dx",

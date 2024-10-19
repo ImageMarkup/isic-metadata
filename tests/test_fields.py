@@ -129,22 +129,36 @@ def test_clin_size_long_diam_mm_invalid():
 @pytest.mark.parametrize(
     ("raw", "parsed"),
     [
-        ("Benign", "Benign"),
-        ("Benign - Other", "Benign:Benign - Other"),
-        ("Blue nevus", "Benign:Benign melanocytic proliferations:Nevus:Blue nevus"),
+        ("Benign", ["Benign"]),
+        ("Benign - Other", ["Benign", "Benign - Other"]),
+        ("Blue nevus", ["Benign", "Benign melanocytic proliferations", "Nevus", "Blue nevus"]),
         (
             "Squamous cell carcinoma, NOS",
-            "Malignant:Malignant epidermal proliferations:Squamous cell carcinoma, NOS",
+            ["Malignant", "Malignant epidermal proliferations", "Squamous cell carcinoma, NOS"],
         ),
         (
             "Blue nevus, Sclerosing",
-            "Benign:Benign melanocytic proliferations:Nevus:Blue nevus:Blue nevus, Sclerosing",
+            [
+                "Benign",
+                "Benign melanocytic proliferations",
+                "Nevus",
+                "Blue nevus",
+                "Blue nevus, Sclerosing",
+            ],
         ),
     ],
 )
 def test_diagnosis(raw, parsed):
     metadata = MetadataRow.model_validate({"diagnosis": raw})
-    assert metadata.diagnosis == parsed, str(metadata.diagnosis)
+
+    for i, diagnosis in enumerate(parsed, start=1):
+        assert getattr(metadata, f"diagnosis_{i}") == diagnosis
+
+
+def test_top_level_diagnosis_is_never_exported():
+    metadata = MetadataRow.model_validate({"diagnosis": "Benign"})
+    assert "diagnosis" not in metadata.model_dump()
+    assert metadata.diagnosis_1 == "Benign"
 
 
 def test_diagnosis_enum_has_unique_terminal_values():
