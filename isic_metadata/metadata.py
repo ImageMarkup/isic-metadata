@@ -284,10 +284,32 @@ class MetadataRow(BaseModel):
 
         super().__init__(**kwargs)
 
-    # See https://github.com/samuelcolvin/pydantic/issues/2285 for more detail
     @model_validator(mode="before")
     @classmethod
-    def build_extra(cls, values: dict[str, Any]) -> dict[str, Any]:
+    def handle_hierarchical_diagnosis_modes_and_unstructured_fields(
+        cls, values: dict[str, Any]
+    ) -> dict[str, Any]:
+        """
+        Handle the case where hierarchical diagnosis values are passed in as multiple fields.
+
+        Practically, ingesting data should never pass in multiple values but instead use the
+        colon-separated `diagnosis` field. This method is provided for the scenario where
+        data needs to be retrieved from the database (where it's stored multi-valued) and
+        revalidated. This method also handles putting any unrecognized fields into an unstructured
+        field. Unfortunately, pydantic doesn't yet support ordering different model validators so
+        these both need to be combined into one method.
+        """
+        using_diagnoses_multi_values = any(f"diagnosis_{i}" in values for i in range(1, 6))
+        using_diagnosis_single_value = bool(values.get("diagnosis"))
+
+        if using_diagnoses_multi_values and using_diagnosis_single_value:
+            [values.pop(f"diagnosis_{i}", "") for i in range(1, 6)]
+        elif using_diagnoses_multi_values:
+            values["diagnosis"] = ":".join(values.pop(f"diagnosis_{i}", "") for i in range(1, 6))
+            values["diagnosis"] = values["diagnosis"].rstrip(":")
+
+        # handle unstructured fields
+        # See https://github.com/samuelcolvin/pydantic/issues/2285 for more detail
         structured_field_names = {field for field in cls.model_fields if field != "unstructured"}
 
         unstructured: dict[str, Any] = {}
