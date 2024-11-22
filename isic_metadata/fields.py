@@ -191,6 +191,15 @@ class AnatomSiteGeneralEnum(str, Enum):
     oral_genital = "oral/genital"
 
 
+class AnatomSiteSpecialEnum(str, Enum):
+    acral_nos = "acral NOS"
+    nail_nos = "nail NOS"
+    fingernail = "fingernail"
+    toenail = "toenail"
+    acral_palms_soles = "acral palms or soles"
+    oral_genital = "oral or genital"
+
+
 class ColorTintEnum(str, Enum):
     blue = "blue"
     pink = "pink"
