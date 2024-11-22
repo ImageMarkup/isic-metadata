@@ -174,7 +174,7 @@ FIELD_REGISTRY.update(
     }
 )
 
-for field in FIELD_REGISTRY:
+for field in FIELD_REGISTRY:  # noqa: PLC0206
     if field in [
         "blurry",
         "color_tint",
