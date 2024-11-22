@@ -4,7 +4,7 @@ from collections import defaultdict
 from decimal import Decimal
 from typing import Annotated, Any, Literal
 
-from annotated_types import Ge  # noqa: TCH002
+from annotated_types import Ge
 from pydantic import (
     AfterValidator,
     BaseModel,
