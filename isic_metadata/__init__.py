@@ -56,6 +56,7 @@ for field in [
     "mel_class",
     "mel_mitotic_index",
     "anatom_site_general",
+    "anatom_site_special",
     "color_tint",
     "patient_id",
     "lesion_id",
