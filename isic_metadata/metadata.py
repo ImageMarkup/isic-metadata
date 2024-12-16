@@ -479,6 +479,9 @@ class MetadataRow(BaseModel):
             AnatomSiteSpecialEnum.oral_genital: [
                 AnatomSiteGeneralEnum.head_neck,
                 AnatomSiteGeneralEnum.oral_genital,
+                AnatomSiteGeneralEnum.lower_extremity,
+                AnatomSiteGeneralEnum.anterior_torso,
+                AnatomSiteGeneralEnum.posterior_torso,
             ],
         }
 
