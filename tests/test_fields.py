@@ -135,7 +135,10 @@ def test_clin_size_long_diam_mm_invalid():
         ("fingernail", ["upper extremity", "palms/soles"]),
         ("toenail", ["lower extremity", "palms/soles"]),
         ("acral palms or soles", ["upper extremity", "lower extremity", "palms/soles"]),
-        ("oral or genital", ["head/neck", "oral/genital"]),
+        (
+            "oral or genital",
+            ["head/neck", "oral/genital", "lower extremity", "anterior torso", "posterior torso"],
+        ),
     ],
 )
 def test_anatom_site_special(anatom_site_special: str, anatom_site_general_values: list[str]):
