@@ -23,25 +23,12 @@ def test_diagnosis_no_malignant_nevus(benign_malignant: str):
     assert " is incompatible with benign_malignant" in excinfo.value.errors()[0]["msg"]
 
 
-@pytest.mark.parametrize(
-    ("diagnosis", "error_message"),
-    [(None, "requires setting diagnosis"), ("Melanoma Invasive", "is incompatible with diagnosis")],
-)
-def test_nevus_type_needs_nevus_diagnosis(diagnosis: str | None, error_message: str):
-    with pytest.raises(ValidationError) as excinfo:
-        MetadataRow.model_validate({"diagnosis": diagnosis, "nevus_type": "spitz"})
-    assert len(excinfo.value.errors()) == 1
-    assert f"nevus_type {error_message}" in excinfo.value.errors()[0]["msg"]
-
-
 @pytest.mark.parametrize("diagnosis", [None, "Basal cell carcinoma"])
 @pytest.mark.parametrize(
     ("field_name", "field_value"),
     [
-        ("mel_class", "melanoma in situ"),
         ("mel_mitotic_index", "4/mm^2"),
         ("mel_thick_mm", "4mm"),
-        ("mel_type", "nodular melanoma"),
         ("mel_ulcer", True),
     ],
 )

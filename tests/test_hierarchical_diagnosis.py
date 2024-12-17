@@ -52,15 +52,15 @@ def test_single_value_diagnosis_is_favored():
     with pytest.raises(ValidationError) as excinfo:
         MetadataRow.model_validate(
             {
-                "diagnosis": "Melanoma Invasive",
-                "nevus_type": "blue",
+                "diagnosis": "Fibroma, Sclerotic",
+                "mel_ulcer": True,
                 # these should be ignored
                 "diagnosis_1": "Benign",
                 "diagnosis_2": "Benign melanocytic proliferations",
                 "diagnosis_3": "Nevus",
             }
         )
-    assert "Setting nevus_type is incompatible with diagnosis" in excinfo.value.errors()[0]["msg"]
+    assert "Setting mel_ulcer is incompatible with diagnosis" in excinfo.value.errors()[0]["msg"]
 
 
 def test_diagnosis_multiple_levels_is_coerced():

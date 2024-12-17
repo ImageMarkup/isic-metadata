@@ -37,7 +37,7 @@ def test_non_str_types(
 
 @pytest.mark.parametrize(("emptyish_value"), ["", " ", "\t", None])
 def test_empty_fields_are_omitted(emptyish_value: Any):
-    metadata = MetadataRow.model_validate({"diagnosis": "Benign", "mel_type": emptyish_value})
+    metadata = MetadataRow.model_validate({"diagnosis": "Benign", "mel_ulcer": emptyish_value})
     assert metadata.diagnosis == "Benign"
     assert metadata.mel_thick_mm is None
 
@@ -51,13 +51,13 @@ def test_unstructured_fields():
 @pytest.mark.parametrize(("melanoma_diagnosis"), DiagnosisEnum._melanoma_diagnoses())
 def test_melanoma_fields(melanoma_diagnosis: str):
     with pytest.raises(ValidationError) as excinfo:
-        # mel_class can only be set if diagnosis is melanoma
-        MetadataRow.model_validate({"diagnosis": "Benign", "mel_class": "invasive melanoma"})
+        # mel_ulcer can only be set if diagnosis is melanoma
+        MetadataRow.model_validate({"diagnosis": "Benign", "mel_ulcer": True})
     assert len(excinfo.value.errors()) == 1
-    assert "mel_class is incompatible with diagnosis" in excinfo.value.errors()[0]["msg"]
+    assert "mel_ulcer is incompatible with diagnosis" in excinfo.value.errors()[0]["msg"]
 
-    # mel_class can only be set if diagnosis is melanoma
-    MetadataRow.model_validate({"diagnosis": melanoma_diagnosis, "mel_class": "invasive melanoma"})
+    # mel_ulcer can only be set if diagnosis is melanoma
+    MetadataRow.model_validate({"diagnosis": melanoma_diagnosis, "mel_ulcer": True})
 
 
 @given(age=st.integers(min_value=0).map(str))
@@ -77,11 +77,6 @@ def test_fitzpatrick_skin_type():
 
 def test_benign_malignant():
     MetadataRow.model_validate({"benign_malignant": "benign"})
-
-
-@pytest.mark.parametrize(("nevus_diagnosis"), DiagnosisEnum._nevus_diagnoses())
-def test_nevus_diagnosis(nevus_diagnosis: str):
-    MetadataRow.model_validate({"diagnosis": nevus_diagnosis, "nevus_type": "blue"})
 
 
 @pytest.mark.parametrize(
