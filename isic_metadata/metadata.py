@@ -371,25 +371,10 @@ class MetadataRow(BaseModel):
         return self
 
     @model_validator(mode="after")
-    def validate_non_nevus_diagnoses(self) -> MetadataRow:
-        if not self.nevus_type:
-            return self
-
-        if not self.diagnosis:
-            raise error_missing_field("nevus_type", "diagnosis")
-
-        if not DiagnosisEnum.is_nevus(self.diagnosis):
-            raise error_incompatible_fields("nevus_type", "diagnosis", field2_value=self.diagnosis)
-
-        return self
-
-    @model_validator(mode="after")
     def validate_melanoma_fields(self) -> MetadataRow:
         melanoma_fields: list[str] = [
-            "mel_class",
             "mel_mitotic_index",
             "mel_thick_mm",
-            "mel_type",
             "mel_ulcer",
         ]
 
