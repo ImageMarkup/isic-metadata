@@ -75,10 +75,6 @@ def test_fitzpatrick_skin_type():
     MetadataRow.model_validate({"fitzpatrick_skin_type": "I"})
 
 
-def test_benign_malignant():
-    MetadataRow.model_validate({"benign_malignant": "benign"})
-
-
 @pytest.mark.parametrize(
     ("raw", "parsed"),
     [

@@ -3,24 +3,7 @@ from typing import Any
 from pydantic import ValidationError
 import pytest
 
-from isic_metadata.diagnosis_hierarchical import DiagnosisEnum
 from isic_metadata.metadata import MetadataRow
-
-
-@pytest.mark.parametrize(("melanoma_diagnosis"), DiagnosisEnum._melanoma_diagnoses())
-def test_diagnosis_no_benign_melanoma(melanoma_diagnosis: str):
-    with pytest.raises(ValidationError) as excinfo:
-        MetadataRow.model_validate({"diagnosis": melanoma_diagnosis, "benign_malignant": "benign"})
-    assert len(excinfo.value.errors()) == 1
-    assert " is incompatible with benign_malignant" in excinfo.value.errors()[0]["msg"]
-
-
-@pytest.mark.parametrize("benign_malignant", ["malignant", "indeterminate/malignant"])
-def test_diagnosis_no_malignant_nevus(benign_malignant: str):
-    with pytest.raises(ValidationError) as excinfo:
-        MetadataRow.model_validate({"diagnosis": "Nevus", "benign_malignant": benign_malignant})
-    assert len(excinfo.value.errors()) == 1
-    assert " is incompatible with benign_malignant" in excinfo.value.errors()[0]["msg"]
 
 
 @pytest.mark.parametrize("diagnosis", [None, "Basal cell carcinoma"])

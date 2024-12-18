@@ -348,29 +348,6 @@ class MetadataRow(BaseModel):
         return v
 
     @model_validator(mode="after")
-    def validate_no_benign_melanoma(self) -> MetadataRow:
-        if not self.benign_malignant:
-            return self
-
-        if (DiagnosisEnum.is_melanoma(self.diagnosis) and self.benign_malignant == "benign") or (
-            DiagnosisEnum.is_nevus(self.diagnosis)
-            and self.benign_malignant
-            not in [
-                BenignMalignantEnum.benign,
-                BenignMalignantEnum.indeterminate_benign,
-                BenignMalignantEnum.indeterminate,
-            ]
-        ):
-            raise error_incompatible_fields(
-                "diagnosis",
-                "benign_malignant",
-                self.diagnosis.value,
-                self.benign_malignant.value,
-            )
-
-        return self
-
-    @model_validator(mode="after")
     def validate_melanoma_fields(self) -> MetadataRow:
         melanoma_fields: list[str] = [
             "mel_mitotic_index",
