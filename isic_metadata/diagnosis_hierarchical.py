@@ -918,23 +918,9 @@ class DiagnosisEnum(str, Enum):
             diagnosis
             for diagnosis in cls
             if diagnosis.startswith(cls.malignant_malignant_melanocytic_proliferations_melanoma)
-        ]
+        ] + [cls.malignant_collision_at_least_one_malignant_proliferation]
 
     @classmethod
     @cache
     def is_melanoma(cls, value: str) -> bool:
         return value in cls._melanoma_diagnoses()
-
-    @classmethod
-    @cache
-    def _nevus_diagnoses(cls):
-        return [
-            diagnosis
-            for diagnosis in cls
-            if diagnosis.startswith(cls.benign_benign_melanocytic_proliferations_nevus)
-        ]
-
-    @classmethod
-    @cache
-    def is_nevus(cls, value: str) -> bool:
-        return value in cls._nevus_diagnoses()
