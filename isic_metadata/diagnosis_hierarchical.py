@@ -416,8 +416,8 @@ class DiagnosisEnum(str, Enum):
     benign_inflammatory_or_infectious_diseases_verruca = (
         "Benign:Inflammatory or infectious diseases:Verruca"
     )
-    benign_inflammatory_or_infectious_diseases_muluscum = (
-        "Benign:Inflammatory or infectious diseases:Muluscum"
+    benign_inflammatory_or_infectious_diseases_molluscum = (
+        "Benign:Inflammatory or infectious diseases:Molluscum"
     )
     benign_langerhans_cell_proliferations_erdheim_chester_disease = (
         "Benign:Langerhans cell proliferations:Erdheim Chester disease"
