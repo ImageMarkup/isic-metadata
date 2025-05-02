@@ -213,3 +213,9 @@ class FitzpatrickSkinType(str, Enum):
     type_iv = "IV"
     type_v = "V"
     type_vi = "VI"
+
+
+class ImageManipulationEnum(str, Enum):
+    instrument_only = "instrument only"
+    altered = "altered"
+    synthetic = "synthetic"

@@ -29,6 +29,7 @@ from isic_metadata.fields import (
     DiagnosisConfirmTypeEnum,
     DiagnosisEnum,
     FitzpatrickSkinType,
+    ImageManipulationEnum,
     ImageTypeEnum,
     LegacyDxEnum,
     MelClassEnum,
@@ -238,6 +239,8 @@ class MetadataRow(BaseModel):
     patient_id: str | None = None
     lesion_id: str | None = None
     acquisition_day: int | None = None
+
+    image_manipulation: ImageManipulationEnum | None = None
 
     nevus_type: NevusTypeEnum | None = None
     image_type: ImageTypeEnum | None = None
