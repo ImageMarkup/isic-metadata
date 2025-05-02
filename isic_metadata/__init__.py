@@ -61,6 +61,7 @@ for field in [
     "patient_id",
     "lesion_id",
     "rcm_case_id",
+    "image_manipulation",
 ]:
     FIELD_REGISTRY[field] = Field(
         search=SearchConfig(
@@ -183,6 +184,7 @@ for field in FIELD_REGISTRY:  # noqa: PLC0206
         "hairy",
         "image_type",
         "marker_pen",
+        "image_manipulation",
     ]:
         FIELD_REGISTRY[field].type = "acquisition"
     else:
