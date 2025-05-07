@@ -100,13 +100,6 @@ FIELD_REGISTRY.update(
             )
         ),
         "acquisition_day": Field(),
-        "diagnosis": Field(
-            search=SearchConfig(
-                key="diagnosis",
-                es_property={"type": "keyword"},
-                es_facet={"terms": {"field": "diagnosis", "size": 100}},
-            )
-        ),
         "diagnosis_1": Field(
             search=SearchConfig(
                 key="diagnosis_1",
@@ -140,13 +133,6 @@ FIELD_REGISTRY.update(
                 key="diagnosis_5",
                 es_property={"type": "keyword"},
                 es_facet={"terms": {"field": "diagnosis_5", "size": 100}},
-            )
-        ),
-        "legacy_dx": Field(
-            search=SearchConfig(
-                key="legacy_dx",
-                es_property={"type": "keyword"},
-                es_facet={"terms": {"field": "legacy_dx", "size": 100}},
             )
         ),
         "mel_thick_mm": Field(

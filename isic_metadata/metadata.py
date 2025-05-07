@@ -31,7 +31,6 @@ from isic_metadata.fields import (
     FitzpatrickSkinType,
     ImageManipulationEnum,
     ImageTypeEnum,
-    LegacyDxEnum,
     MelClassEnum,
     MelMitoticIndexEnum,
     MelThickMm,
@@ -217,7 +216,6 @@ class MetadataRow(BaseModel):
         ]
         | None
     ) = Field(default=None, exclude=True)  # never expose the fully qualified diagnosis
-    legacy_dx: LegacyDxEnum | None = None
     diagnosis_confirm_type: DiagnosisConfirmTypeEnum | None = None
     personal_hx_mm: bool | None = None
     family_hx_mm: bool | None = None
