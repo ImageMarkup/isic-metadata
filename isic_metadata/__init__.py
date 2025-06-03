@@ -46,7 +46,6 @@ for field in [
 
 for field in [
     "sex",
-    "benign_malignant",
     "diagnosis_confirm_type",
     "nevus_type",
     "image_type",

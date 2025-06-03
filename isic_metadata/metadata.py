@@ -22,7 +22,6 @@ from isic_metadata.fields import (
     Age,
     AnatomSiteGeneralEnum,
     AnatomSiteSpecialEnum,
-    BenignMalignantEnum,
     ClinSizeLongDiamMm,
     ColorTintEnum,
     DermoscopicTypeEnum,
@@ -206,7 +205,6 @@ class MetadataRow(BaseModel):
     sex: Literal["male", "female"] | None = None
     anatom_site_general: AnatomSiteGeneralEnum | None = None
     anatom_site_special: AnatomSiteSpecialEnum | None = None
-    benign_malignant: BenignMalignantEnum | None = None
     diagnosis: (
         Annotated[
             DiagnosisEnum,
@@ -330,7 +328,6 @@ class MetadataRow(BaseModel):
 
     @field_validator(
         "anatom_site_general",
-        "benign_malignant",
         "clin_size_long_diam_mm",
         "diagnosis_confirm_type",
         "mel_mitotic_index",

@@ -43,15 +43,6 @@ class Age:
         return min(value, 85)
 
 
-# TODO: indeterminable
-class BenignMalignantEnum(str, Enum):
-    benign = "benign"
-    malignant = "malignant"
-    indeterminate = "indeterminate"
-    indeterminate_benign = "indeterminate/benign"
-    indeterminate_malignant = "indeterminate/malignant"
-
-
 class DiagnosisConfirmTypeEnum(str, Enum):
     histopathology = "histopathology"
     serial_imaging_showing_no_change = "serial imaging showing no change"
