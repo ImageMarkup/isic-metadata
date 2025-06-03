@@ -43,15 +43,6 @@ class Age:
         return min(value, 85)
 
 
-# TODO: indeterminable
-class BenignMalignantEnum(str, Enum):
-    benign = "benign"
-    malignant = "malignant"
-    indeterminate = "indeterminate"
-    indeterminate_benign = "indeterminate/benign"
-    indeterminate_malignant = "indeterminate/malignant"
-
-
 class DiagnosisConfirmTypeEnum(str, Enum):
     histopathology = "histopathology"
     serial_imaging_showing_no_change = "serial imaging showing no change"
@@ -99,19 +90,6 @@ class LegacyDxEnum(str, Enum):
     other = "other"
 
 
-class NevusTypeEnum(str, Enum):
-    blue = "blue"
-    combined = "combined"
-    nevus_nos = "nevus NOS"
-    deep_penetrating = "deep penetrating"
-    halo = "halo"
-    persistent_recurrent = "persistent/recurrent"
-    pigmented_spindle_cell_of_reed = "pigmented spindle cell of reed"
-    plexiform_spindle_cell = "plexiform spindle cell"
-    special_site = "special site"
-    spitz = "spitz"
-
-
 class ImageTypeEnum(str, Enum):
     dermoscopic = "dermoscopic"
     clinical_overview = "clinical: overview"
@@ -134,22 +112,6 @@ class TBPTileTypeEnum(str, Enum):
     tbp_3d_white = "3D: white"
     tbp_3d_xp = "3D: XP"
     tbp_2d = "2D"
-
-
-class MelTypeEnum(str, Enum):
-    superficial_spreading_melanoma = "superficial spreading melanoma"
-    nodular_melanoma = "nodular melanoma"
-    lentigo_maligna_melanoma = "lentigo maligna melanoma"
-    acral_lentiginous_melanoma = "acral lentiginous melanoma"
-    melanoma_nos = "melanoma NOS"
-
-
-class MelClassEnum(str, Enum):
-    melanoma_in_situ = "melanoma in situ"
-    invasive_melanoma = "invasive melanoma"
-    recurrent_persistent_melanoma_in_situ = "recurrent/persistent melanoma, in situ"
-    recurrent_persistent_melanoma_invasive = "recurrent/persistent melanoma, invasive"
-    melanoma_nos = "melanoma NOS"
 
 
 class MelThickMm:

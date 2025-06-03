@@ -46,14 +46,10 @@ for field in [
 
 for field in [
     "sex",
-    "benign_malignant",
     "diagnosis_confirm_type",
-    "nevus_type",
     "image_type",
     "dermoscopic_type",
     "tbp_tile_type",
-    "mel_type",
-    "mel_class",
     "mel_mitotic_index",
     "anatom_site_general",
     "anatom_site_special",

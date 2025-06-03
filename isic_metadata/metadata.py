@@ -22,7 +22,6 @@ from isic_metadata.fields import (
     Age,
     AnatomSiteGeneralEnum,
     AnatomSiteSpecialEnum,
-    BenignMalignantEnum,
     ClinSizeLongDiamMm,
     ColorTintEnum,
     DermoscopicTypeEnum,
@@ -31,11 +30,8 @@ from isic_metadata.fields import (
     FitzpatrickSkinType,
     ImageManipulationEnum,
     ImageTypeEnum,
-    MelClassEnum,
     MelMitoticIndexEnum,
     MelThickMm,
-    MelTypeEnum,
-    NevusTypeEnum,
     TBPTileTypeEnum,
 )
 
@@ -208,7 +204,6 @@ class MetadataRow(BaseModel):
     sex: Literal["male", "female"] | None = None
     anatom_site_general: AnatomSiteGeneralEnum | None = None
     anatom_site_special: AnatomSiteSpecialEnum | None = None
-    benign_malignant: BenignMalignantEnum | None = None
     diagnosis: (
         Annotated[
             DiagnosisEnum,
@@ -226,12 +221,10 @@ class MetadataRow(BaseModel):
     melanocytic: bool | None = None
     concomitant_biopsy: bool | None = None
 
-    mel_class: MelClassEnum | None = None
     mel_mitotic_index: MelMitoticIndexEnum | None = None
     mel_thick_mm: Annotated[Decimal, BeforeValidator(MelThickMm.parse_measurement_str)] | None = (
         None
     )
-    mel_type: MelTypeEnum | None = None
     mel_ulcer: bool | None = None
 
     patient_id: str | None = None
@@ -240,7 +233,6 @@ class MetadataRow(BaseModel):
 
     image_manipulation: ImageManipulationEnum | None = None
 
-    nevus_type: NevusTypeEnum | None = None
     image_type: ImageTypeEnum | None = None
     dermoscopic_type: DermoscopicTypeEnum | None = None
     tbp_tile_type: TBPTileTypeEnum | None = None
@@ -334,7 +326,6 @@ class MetadataRow(BaseModel):
 
     @field_validator(
         "anatom_site_general",
-        "benign_malignant",
         "clin_size_long_diam_mm",
         "diagnosis_confirm_type",
         "mel_mitotic_index",
