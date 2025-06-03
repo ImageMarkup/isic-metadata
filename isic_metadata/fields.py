@@ -90,19 +90,6 @@ class LegacyDxEnum(str, Enum):
     other = "other"
 
 
-class NevusTypeEnum(str, Enum):
-    blue = "blue"
-    combined = "combined"
-    nevus_nos = "nevus NOS"
-    deep_penetrating = "deep penetrating"
-    halo = "halo"
-    persistent_recurrent = "persistent/recurrent"
-    pigmented_spindle_cell_of_reed = "pigmented spindle cell of reed"
-    plexiform_spindle_cell = "plexiform spindle cell"
-    special_site = "special site"
-    spitz = "spitz"
-
-
 class ImageTypeEnum(str, Enum):
     dermoscopic = "dermoscopic"
     clinical_overview = "clinical: overview"

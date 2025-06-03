@@ -47,7 +47,6 @@ for field in [
 for field in [
     "sex",
     "diagnosis_confirm_type",
-    "nevus_type",
     "image_type",
     "dermoscopic_type",
     "tbp_tile_type",

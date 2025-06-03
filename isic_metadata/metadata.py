@@ -32,7 +32,6 @@ from isic_metadata.fields import (
     ImageTypeEnum,
     MelMitoticIndexEnum,
     MelThickMm,
-    NevusTypeEnum,
     TBPTileTypeEnum,
 )
 
@@ -234,7 +233,6 @@ class MetadataRow(BaseModel):
 
     image_manipulation: ImageManipulationEnum | None = None
 
-    nevus_type: NevusTypeEnum | None = None
     image_type: ImageTypeEnum | None = None
     dermoscopic_type: DermoscopicTypeEnum | None = None
     tbp_tile_type: TBPTileTypeEnum | None = None
