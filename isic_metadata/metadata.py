@@ -31,7 +31,6 @@ from isic_metadata.fields import (
     FitzpatrickSkinType,
     ImageManipulationEnum,
     ImageTypeEnum,
-    MelClassEnum,
     MelMitoticIndexEnum,
     MelThickMm,
     NevusTypeEnum,
@@ -225,7 +224,6 @@ class MetadataRow(BaseModel):
     melanocytic: bool | None = None
     concomitant_biopsy: bool | None = None
 
-    mel_class: MelClassEnum | None = None
     mel_mitotic_index: MelMitoticIndexEnum | None = None
     mel_thick_mm: Annotated[Decimal, BeforeValidator(MelThickMm.parse_measurement_str)] | None = (
         None

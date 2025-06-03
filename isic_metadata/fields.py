@@ -136,14 +136,6 @@ class TBPTileTypeEnum(str, Enum):
     tbp_2d = "2D"
 
 
-class MelClassEnum(str, Enum):
-    melanoma_in_situ = "melanoma in situ"
-    invasive_melanoma = "invasive melanoma"
-    recurrent_persistent_melanoma_in_situ = "recurrent/persistent melanoma, in situ"
-    recurrent_persistent_melanoma_invasive = "recurrent/persistent melanoma, invasive"
-    melanoma_nos = "melanoma NOS"
-
-
 class MelThickMm:
     _regex = re.compile(r"^([\d.]+)(\s+)?(mm)?$")
 

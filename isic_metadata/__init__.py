@@ -52,7 +52,6 @@ for field in [
     "image_type",
     "dermoscopic_type",
     "tbp_tile_type",
-    "mel_class",
     "mel_mitotic_index",
     "anatom_site_general",
     "anatom_site_special",
