@@ -136,14 +136,6 @@ class TBPTileTypeEnum(str, Enum):
     tbp_2d = "2D"
 
 
-class MelTypeEnum(str, Enum):
-    superficial_spreading_melanoma = "superficial spreading melanoma"
-    nodular_melanoma = "nodular melanoma"
-    lentigo_maligna_melanoma = "lentigo maligna melanoma"
-    acral_lentiginous_melanoma = "acral lentiginous melanoma"
-    melanoma_nos = "melanoma NOS"
-
-
 class MelClassEnum(str, Enum):
     melanoma_in_situ = "melanoma in situ"
     invasive_melanoma = "invasive melanoma"

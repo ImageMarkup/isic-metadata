@@ -34,7 +34,6 @@ from isic_metadata.fields import (
     MelClassEnum,
     MelMitoticIndexEnum,
     MelThickMm,
-    MelTypeEnum,
     NevusTypeEnum,
     TBPTileTypeEnum,
 )
@@ -231,7 +230,6 @@ class MetadataRow(BaseModel):
     mel_thick_mm: Annotated[Decimal, BeforeValidator(MelThickMm.parse_measurement_str)] | None = (
         None
     )
-    mel_type: MelTypeEnum | None = None
     mel_ulcer: bool | None = None
 
     patient_id: str | None = None
