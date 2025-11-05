@@ -101,8 +101,8 @@ def test_mel_thick_mm_invalid():
     clin_size=st.one_of(
         # keep max values bounded so they don't generate larger than representable decimals.
         # disallow infinity to avoid the string 'inf'.
-        st.floats(min_value=0, max_value=1_000_000, exclude_min=True, allow_infinity=False),
-        st.integers(min_value=1, max_value=1_000),
+        st.floats(min_value=0, max_value=9999, exclude_min=False, allow_infinity=False),
+        st.integers(min_value=1, max_value=9999),
     ).map(lambda x: f"{x} mm")
 )
 def test_clin_size_long_diam_mm_always_rounded(clin_size: str):
