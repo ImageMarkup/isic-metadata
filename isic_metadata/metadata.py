@@ -215,16 +215,26 @@ class MetadataRow(BaseModel):
     personal_hx_mm: bool | None = None
     family_hx_mm: bool | None = None
     clin_size_long_diam_mm: (
-        Annotated[Decimal, BeforeValidator(ClinSizeLongDiamMm.parse_measurement_str)] | None
+        Annotated[
+            Decimal,
+            BeforeValidator(ClinSizeLongDiamMm.parse_measurement_str),
+            Field(max_digits=5, decimal_places=2),
+        ]
+        | None
     ) = None
     fitzpatrick_skin_type: FitzpatrickSkinType | None = None
     melanocytic: bool | None = None
     concomitant_biopsy: bool | None = None
 
     mel_mitotic_index: MelMitoticIndexEnum | None = None
-    mel_thick_mm: Annotated[Decimal, BeforeValidator(MelThickMm.parse_measurement_str)] | None = (
-        None
-    )
+    mel_thick_mm: (
+        Annotated[
+            Decimal,
+            BeforeValidator(MelThickMm.parse_measurement_str),
+            Field(max_digits=5, decimal_places=2),
+        ]
+        | None
+    ) = None
     mel_ulcer: bool | None = None
 
     patient_id: str | None = None
@@ -239,7 +249,7 @@ class MetadataRow(BaseModel):
 
     rcm_case_id: str | None = None
 
-    unstructured: dict[str, Any] = {}
+    unstructured: dict[str, Any] = Field(default_factory=dict, exclude=True)
 
     # Unused and undocumented
     marker_pen: bool | None = None
