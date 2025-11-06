@@ -38,6 +38,7 @@ setup(
         "test": [
             "coverage[toml]",
             "hypothesis",
+            "pydantic-to-pyarrow",
             "pytest",
             "pytest-mock",
             "pytest-cov",
