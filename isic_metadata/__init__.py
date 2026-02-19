@@ -131,6 +131,41 @@ FIELD_REGISTRY.update(
                 es_facet={"terms": {"field": "diagnosis_5", "size": 100}},
             )
         ),
+        "anatom_site_1": Field(
+            search=SearchConfig(
+                key="anatom_site_1",
+                es_property={"type": "keyword"},
+                es_facet={"terms": {"field": "anatom_site_1", "size": 100}},
+            )
+        ),
+        "anatom_site_2": Field(
+            search=SearchConfig(
+                key="anatom_site_2",
+                es_property={"type": "keyword"},
+                es_facet={"terms": {"field": "anatom_site_2", "size": 100}},
+            )
+        ),
+        "anatom_site_3": Field(
+            search=SearchConfig(
+                key="anatom_site_3",
+                es_property={"type": "keyword"},
+                es_facet={"terms": {"field": "anatom_site_3", "size": 100}},
+            )
+        ),
+        "anatom_site_4": Field(
+            search=SearchConfig(
+                key="anatom_site_4",
+                es_property={"type": "keyword"},
+                es_facet={"terms": {"field": "anatom_site_4", "size": 100}},
+            )
+        ),
+        "anatom_site_5": Field(
+            search=SearchConfig(
+                key="anatom_site_5",
+                es_property={"type": "keyword"},
+                es_facet={"terms": {"field": "anatom_site_5", "size": 100}},
+            )
+        ),
         "mel_thick_mm": Field(
             search=SearchConfig(
                 key="mel_thick_mm",
