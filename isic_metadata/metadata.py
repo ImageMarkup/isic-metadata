@@ -20,6 +20,7 @@ from pydantic_core import ErrorDetails, PydanticCustomError
 
 from isic_metadata.fields import (
     Age,
+    AnatomSiteEnum,
     AnatomSiteGeneralEnum,
     AnatomSiteSpecialEnum,
     ClinSizeLongDiamMm,
@@ -204,6 +205,13 @@ class MetadataRow(BaseModel):
     sex: Literal["male", "female"] | None = None
     anatom_site_general: AnatomSiteGeneralEnum | None = None
     anatom_site_special: AnatomSiteSpecialEnum | None = None
+    anatom_site: (
+        Annotated[
+            AnatomSiteEnum,
+            BeforeValidator(AnatomSiteEnum.accept_terminal_values),
+        ]
+        | None
+    ) = Field(default=None, exclude=True)  # never expose the fully qualified anatom_site
     diagnosis: (
         Annotated[
             DiagnosisEnum,
@@ -277,6 +285,26 @@ class MetadataRow(BaseModel):
     def diagnosis_5(self) -> str | None:
         return DiagnosisEnum.levels(self.diagnosis)[4] if self.diagnosis else None
 
+    @computed_field
+    def anatom_site_1(self) -> str | None:
+        return AnatomSiteEnum.levels(self.anatom_site)[0] if self.anatom_site else None
+
+    @computed_field
+    def anatom_site_2(self) -> str | None:
+        return AnatomSiteEnum.levels(self.anatom_site)[1] if self.anatom_site else None
+
+    @computed_field
+    def anatom_site_3(self) -> str | None:
+        return AnatomSiteEnum.levels(self.anatom_site)[2] if self.anatom_site else None
+
+    @computed_field
+    def anatom_site_4(self) -> str | None:
+        return AnatomSiteEnum.levels(self.anatom_site)[3] if self.anatom_site else None
+
+    @computed_field
+    def anatom_site_5(self) -> str | None:
+        return AnatomSiteEnum.levels(self.anatom_site)[4] if self.anatom_site else None
+
     __slots__ = (IGNORE_RCM_MODEL_CHECKS,)
 
     # see https://github.com/pydantic/pydantic/issues/655#issuecomment-570312649 for details on
@@ -291,27 +319,30 @@ class MetadataRow(BaseModel):
 
     @model_validator(mode="before")
     @classmethod
-    def handle_hierarchical_diagnosis_modes_and_unstructured_fields(
+    def handle_hierarchical_modes_and_unstructured_fields(
         cls, values: dict[str, Any]
     ) -> dict[str, Any]:
         """
-        Handle the case where hierarchical diagnosis values are passed in as multiple fields.
+        Handle the case where hierarchical values are passed in as multiple fields.
 
         Practically, ingesting data should never pass in multiple values but instead use the
-        colon-separated `diagnosis` field. This method is provided for the scenario where
-        data needs to be retrieved from the database (where it's stored multi-valued) and
-        revalidated. This method also handles putting any unrecognized fields into an unstructured
-        field. Unfortunately, pydantic doesn't yet support ordering different model validators so
-        these both need to be combined into one method.
+        colon-separated `diagnosis` or `anatom_site` field. This method is provided for the
+        scenario where data needs to be retrieved from the database (where it's stored
+        multi-valued) and revalidated. This method also handles putting any unrecognized fields
+        into an unstructured field. Unfortunately, pydantic doesn't yet support ordering different
+        model validators so these both need to be combined into one method.
         """
-        using_diagnoses_multi_values = any(f"diagnosis_{i}" in values for i in range(1, 6))
-        using_diagnosis_single_value = bool(values.get("diagnosis"))
+        for field_name in ["diagnosis", "anatom_site"]:
+            using_multi_values = any(f"{field_name}_{i}" in values for i in range(1, 6))
+            using_single_value = bool(values.get(field_name))
 
-        if using_diagnoses_multi_values and using_diagnosis_single_value:
-            [values.pop(f"diagnosis_{i}", "") for i in range(1, 6)]
-        elif using_diagnoses_multi_values:
-            values["diagnosis"] = ":".join(values.pop(f"diagnosis_{i}", "") for i in range(1, 6))
-            values["diagnosis"] = values["diagnosis"].rstrip(":")
+            if using_multi_values and using_single_value:
+                [values.pop(f"{field_name}_{i}", "") for i in range(1, 6)]
+            elif using_multi_values:
+                values[field_name] = ":".join(
+                    values.pop(f"{field_name}_{i}", "") for i in range(1, 6)
+                )
+                values[field_name] = values[field_name].rstrip(":")
 
         # handle unstructured fields
         # See https://github.com/samuelcolvin/pydantic/issues/2285 for more detail

@@ -4,6 +4,7 @@ from enum import Enum
 import re
 from typing import Any
 
+from isic_metadata.anatom_site_hierarchical import AnatomSiteEnum  # noqa: F401
 from isic_metadata.diagnosis_hierarchical import DiagnosisEnum  # noqa: F401
 
 
