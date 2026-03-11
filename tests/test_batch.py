@@ -1,10 +1,12 @@
+from __future__ import annotations
+
 from pydantic import ValidationError
 import pytest
 
 from isic_metadata.metadata import MetadataBatch, MetadataRow
 
 
-def test_batch():
+def test_batch() -> None:
     MetadataBatch(
         items=[
             MetadataRow.model_validate({"sex": "male"}),
@@ -13,7 +15,7 @@ def test_batch():
     )
 
 
-def test_lesions_belong_to_same_patient():
+def test_lesions_belong_to_same_patient() -> None:
     with pytest.raises(ValidationError) as excinfo:
         MetadataBatch(
             items=[
@@ -25,7 +27,7 @@ def test_lesions_belong_to_same_patient():
     assert "belong to multiple patients" in excinfo.value.errors()[0]["msg"]
 
 
-def test_blank_lesions_dont_belong_to_same_patient():
+def test_blank_lesions_dont_belong_to_same_patient() -> None:
     MetadataBatch(
         items=[
             MetadataRow(lesion_id="", patient_id="foopatient"),
@@ -34,7 +36,7 @@ def test_blank_lesions_dont_belong_to_same_patient():
     )
 
 
-def test_rcm_case_has_at_most_one_macroscopic_image():
+def test_rcm_case_has_at_most_one_macroscopic_image() -> None:
     with pytest.raises(ValidationError) as excinfo:
         MetadataBatch(
             items=[
@@ -53,7 +55,7 @@ def test_rcm_case_has_at_most_one_macroscopic_image():
     )
 
 
-def test_rcm_cases_belong_to_same_lesion():
+def test_rcm_cases_belong_to_same_lesion() -> None:
     with pytest.raises(ValidationError) as excinfo:
         MetadataBatch(
             items=[
@@ -69,7 +71,7 @@ def test_rcm_cases_belong_to_same_lesion():
     assert "belong to multiple lesions" in excinfo.value.errors()[0]["msg"]
 
 
-def test_blank_rcm_cases_dont_belong_to_same_lesion():
+def test_blank_rcm_cases_dont_belong_to_same_lesion() -> None:
     MetadataBatch(
         items=[
             MetadataRow(rcm_case_id="", lesion_id="foolesion"),

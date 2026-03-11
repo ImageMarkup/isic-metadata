@@ -1,16 +1,12 @@
 from __future__ import annotations
 
-from enum import Enum
+from enum import StrEnum
 import re
-from typing import Any
-
-from isic_metadata.anatom_site_hierarchical import AnatomSiteEnum  # noqa: F401
-from isic_metadata.diagnosis_hierarchical import DiagnosisEnum  # noqa: F401
 
 
 class ClinSizeLongDiamMm:
     @classmethod
-    def parse_measurement_str(cls, value: Any) -> Any:
+    def parse_measurement_str[T](cls, value: T) -> T | float:
         if isinstance(value, str):
             match = re.match(r"(.+)(um|mm|cm)$", value)
 
@@ -33,7 +29,7 @@ class ClinSizeLongDiamMm:
 
 class Age:
     @classmethod
-    def handle_85plus(cls, value: Any) -> Any:
+    def handle_85plus[T](cls, value: T) -> T | int:
         if value == "85+":
             return 85
 
@@ -44,7 +40,7 @@ class Age:
         return min(value, 85)
 
 
-class DiagnosisConfirmTypeEnum(str, Enum):
+class DiagnosisConfirmTypeEnum(StrEnum):
     histopathology = "histopathology"
     serial_imaging_showing_no_change = "serial imaging showing no change"
     single_image_expert_consensus = "single image expert consensus"
@@ -52,7 +48,7 @@ class DiagnosisConfirmTypeEnum(str, Enum):
     single_contributor_clinical_assessment = "single contributor clinical assessment"
 
 
-class LegacyDxEnum(str, Enum):
+class LegacyDxEnum(StrEnum):
     actinic_keratosis = "actinic keratosis"
     adnexal_tumor = "adnexal tumor"
     aimp = "AIMP"
@@ -91,7 +87,7 @@ class LegacyDxEnum(str, Enum):
     other = "other"
 
 
-class ImageTypeEnum(str, Enum):
+class ImageTypeEnum(StrEnum):
     dermoscopic = "dermoscopic"
     clinical_overview = "clinical: overview"
     clinical_close_up = "clinical: close-up"
@@ -103,13 +99,13 @@ class ImageTypeEnum(str, Enum):
     rcm_mosaic = "RCM: mosaic"
 
 
-class DermoscopicTypeEnum(str, Enum):
+class DermoscopicTypeEnum(StrEnum):
     contact_polarized = "contact polarized"
     contact_non_polarized = "contact non-polarized"
     non_contact_polarized = "non-contact polarized"
 
 
-class TBPTileTypeEnum(str, Enum):
+class TBPTileTypeEnum(StrEnum):
     tbp_3d_white = "3D: white"
     tbp_3d_xp = "3D: XP"
     tbp_2d = "2D"
@@ -119,21 +115,19 @@ class MelThickMm:
     _regex = re.compile(r"^([\d.]+)(\s+)?(mm)?$")
 
     @classmethod
-    def parse_measurement_str(cls, value: Any) -> Any:
+    def parse_measurement_str[T](cls, value: T) -> T | float:
         if isinstance(value, str):
             result = re.match(MelThickMm._regex, value)
 
             if not result:
                 return value
 
-            value = result.group(1)
-
-            return float(value)
+            return float(result.group(1))
 
         return value
 
 
-class MelMitoticIndexEnum(str, Enum):
+class MelMitoticIndexEnum(StrEnum):
     zero = "0/mm^2"
     lt_one = "<1/mm^2"
     one = "1/mm^2"
@@ -143,7 +137,7 @@ class MelMitoticIndexEnum(str, Enum):
     gt_4 = ">4/mm^2"
 
 
-class AnatomSiteGeneralEnum(str, Enum):
+class AnatomSiteGeneralEnum(StrEnum):
     head_neck = "head/neck"
     upper_extremity = "upper extremity"
     lower_extremity = "lower extremity"
@@ -154,7 +148,7 @@ class AnatomSiteGeneralEnum(str, Enum):
     oral_genital = "oral/genital"
 
 
-class AnatomSiteSpecialEnum(str, Enum):
+class AnatomSiteSpecialEnum(StrEnum):
     acral_nos = "acral NOS"
     nail_nos = "nail NOS"
     fingernail = "fingernail"
@@ -163,13 +157,13 @@ class AnatomSiteSpecialEnum(str, Enum):
     oral_genital = "oral or genital"
 
 
-class ColorTintEnum(str, Enum):
+class ColorTintEnum(StrEnum):
     blue = "blue"
     pink = "pink"
     none = "none"
 
 
-class FitzpatrickSkinType(str, Enum):
+class FitzpatrickSkinType(StrEnum):
     type_i = "I"
     type_ii = "II"
     type_iii = "III"
@@ -178,7 +172,7 @@ class FitzpatrickSkinType(str, Enum):
     type_vi = "VI"
 
 
-class ImageManipulationEnum(str, Enum):
+class ImageManipulationEnum(StrEnum):
     instrument_only = "instrument only"
     altered = "altered"
     synthetic = "synthetic"

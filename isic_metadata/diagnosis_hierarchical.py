@@ -1,13 +1,12 @@
 from __future__ import annotations
 
-from enum import Enum
+from enum import StrEnum
 from functools import cache
-from typing import Any
-
-# ruff: noqa: E501
+from typing import Self
 
 
-class DiagnosisEnum(str, Enum):
+class DiagnosisEnum(StrEnum):
+    # ruff: disable[E501]
     benign = "Benign"
     indeterminate = "Indeterminate"
     malignant = "Malignant"
@@ -872,13 +871,13 @@ class DiagnosisEnum(str, Enum):
     malignant_malignant_melanocytic_proliferations_melanoma_melanoma_invasive_melanoma_invasive_blue_nevus_like_melanoma_invasive_resembling_blue_nevus = "Malignant:Malignant melanocytic proliferations (Melanoma):Melanoma Invasive:Melanoma Invasive, Blue nevus-like:Melanoma Invasive, resembling blue nevus"
     malignant_malignant_melanocytic_proliferations_melanoma_melanoma_invasive_melanoma_invasive_blue_nevus_like_melanoma_invasive_originating_from_blue_nevus = "Malignant:Malignant melanocytic proliferations (Melanoma):Melanoma Invasive:Melanoma Invasive, Blue nevus-like:Melanoma Invasive, originating from blue nevus"
     malignant_malignant_melanocytic_proliferations_melanoma_melanoma_invasive_melanoma_invasive_heavily_pigmented_melanoma_invasive_heavily_pigmented_resembling_epithelioid_blue_nevus_or_melanoma_developing_in_animals = "Malignant:Malignant melanocytic proliferations (Melanoma):Melanoma Invasive:Melanoma Invasive, Heavily pigmented:Melanoma Invasive, Heavily pigmented, resembling epithelioid blue nevus or melanoma developing in animals"
+    # ruff: enable[E501]
 
     @staticmethod
     @cache
     def levels(value: str) -> list[str | None]:
         levels_list = value.split(":")
-        levels_list += [None] * (5 - len(levels_list))
-        return levels_list
+        return levels_list + [None] * (5 - len(levels_list))
 
     @staticmethod
     @cache
@@ -893,12 +892,12 @@ class DiagnosisEnum(str, Enum):
 
     @classmethod
     @cache
-    def reverse_ordered_hierarchy(cls) -> list[str]:
-        return sorted(cls, key=lambda x: x.value.count(":"), reverse=True)
+    def reverse_ordered_hierarchy(cls) -> list[Self]:
+        return sorted(cls, key=lambda x: x.count(":"), reverse=True)
 
     @classmethod
     @cache
-    def accept_terminal_values(cls, value: Any) -> Any:
+    def accept_terminal_values(cls, value: str) -> str:
         """
         Allow the user to specify any terminal value of the hierarchy to obtain the relevant value.
 
@@ -906,14 +905,14 @@ class DiagnosisEnum(str, Enum):
         """
         if ":" not in value:
             for member in cls.reverse_ordered_hierarchy():
-                if value == member.value.split(":")[-1]:
-                    return member.value
+                if value == member.split(":")[-1]:
+                    return member
 
         return value
 
     @classmethod
     @cache
-    def _melanoma_diagnoses(cls):
+    def _melanoma_diagnoses(cls) -> list[Self]:
         return [
             diagnosis
             for diagnosis in cls

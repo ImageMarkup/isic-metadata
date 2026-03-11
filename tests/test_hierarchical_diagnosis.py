@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from pydantic import ValidationError
 import pytest
 
@@ -27,25 +29,25 @@ from isic_metadata.metadata import MetadataRow
         ),
     ],
 )
-def test_diagnosis(raw, parsed):
+def test_diagnosis(raw: str, parsed: list[str]) -> None:
     metadata = MetadataRow.model_validate({"diagnosis": raw})
 
     for i, diagnosis in enumerate(parsed, start=1):
         assert getattr(metadata, f"diagnosis_{i}") == diagnosis
 
 
-def test_top_level_diagnosis_is_never_exported():
+def test_top_level_diagnosis_is_never_exported() -> None:
     metadata = MetadataRow.model_validate({"diagnosis": "Benign"})
     assert "diagnosis" not in metadata.model_dump()
     assert metadata.diagnosis_1 == "Benign"
 
 
-def test_diagnosis_enum_has_unique_terminal_values():
+def test_diagnosis_enum_has_unique_terminal_values() -> None:
     terminal_nodes = [member.value.split(":")[-1] for member in DiagnosisEnum]
     assert len(terminal_nodes) == len(set(terminal_nodes))
 
 
-def test_single_value_diagnosis_is_favored():
+def test_single_value_diagnosis_is_favored() -> None:
     # test that passing in a single diagnosis value is favored over multiple values. used
     # for when data is coming from the database and potentially contains an existing
     # 1..5 diagnosis and a newly updated single diagnosis.
@@ -63,7 +65,7 @@ def test_single_value_diagnosis_is_favored():
     assert "Setting mel_ulcer is incompatible with diagnosis" in excinfo.value.errors()[0]["msg"]
 
 
-def test_diagnosis_multiple_levels_is_coerced():
+def test_diagnosis_multiple_levels_is_coerced() -> None:
     # test that passing in diagnosis_1..5 is coerced into a single diagnosis field to handle
     # cross field input validation
     metadata = MetadataRow.model_validate({"diagnosis_1": "Benign"})
@@ -74,7 +76,7 @@ def test_diagnosis_multiple_levels_is_coerced():
     assert metadata.diagnosis_5 is None
 
 
-def test_diagnosis_validation_is_idempotent():
+def test_diagnosis_validation_is_idempotent() -> None:
     # test that running model_validate on a MetadataRow multiple times does not change the
     # output
     metadata = MetadataRow.model_validate({"diagnosis": "Melanoma Invasive"})

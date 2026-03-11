@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections import defaultdict
 from decimal import Decimal
-from typing import Annotated, Any, Literal
+from typing import Annotated, Any, Literal, cast
 
 from annotated_types import Ge
 from pydantic import (
@@ -18,16 +18,16 @@ from pydantic import (
 )
 from pydantic_core import ErrorDetails, PydanticCustomError
 
+from isic_metadata.anatom_site_hierarchical import AnatomSiteEnum
+from isic_metadata.diagnosis_hierarchical import DiagnosisEnum
 from isic_metadata.fields import (
     Age,
-    AnatomSiteEnum,
     AnatomSiteGeneralEnum,
     AnatomSiteSpecialEnum,
     ClinSizeLongDiamMm,
     ColorTintEnum,
     DermoscopicTypeEnum,
     DiagnosisConfirmTypeEnum,
-    DiagnosisEnum,
     FitzpatrickSkinType,
     ImageManipulationEnum,
     ImageTypeEnum,
@@ -36,16 +36,7 @@ from isic_metadata.fields import (
     TBPTileTypeEnum,
 )
 
-"""
-IGNORE_RCM_MODEL_CHECKS is a special attribute that allows disabling RCM model checks. It's
-provided to allow batch checks to be performed on a set of metadata rows, some of which may
-not be valid on a row level. e.g. if a batch of metadata rows contains RCM case ids that are
-inconsistent with lesion ids, that ought to be validated even if the row with an RCM case id
-has a missing image_type for instance.
-"""
-IGNORE_RCM_MODEL_CHECKS = "_ignore_rcm_model_checks"
-
-CUSTOM_MESSAGES = {
+_CUSTOM_MESSAGES = {
     "enum": "Unsupported value for {loc}: '{value}'.",
     "int_parsing": "Unable to parse value as an integer.",
     "bool_parsing": "Unable to parse value as a boolean.",
@@ -57,7 +48,7 @@ CUSTOM_MESSAGES = {
 def convert_errors(e: ValidationError) -> list[ErrorDetails]:
     new_errors: list[ErrorDetails] = []
     for error in e.errors():
-        custom_message = CUSTOM_MESSAGES.get(error["type"])
+        custom_message = _CUSTOM_MESSAGES.get(error["type"])
         if custom_message:
             ctx = error.get("ctx")
             loc = {"loc": error.get("loc")[0]}
@@ -70,7 +61,7 @@ def convert_errors(e: ValidationError) -> list[ErrorDetails]:
     return new_errors
 
 
-def error_incompatible_fields(
+def _error_incompatible_fields(
     field1: str, field2: str, field1_value: str | None = None, field2_value: str | None = None
 ) -> PydanticCustomError:
     message = (
@@ -93,7 +84,7 @@ def error_incompatible_fields(
     )
 
 
-def error_missing_field(
+def _error_missing_field(
     field1: str, field2: str, field1_value: str | None = None, field2_value: str | None = None
 ) -> PydanticCustomError:
     message = (
@@ -265,55 +256,72 @@ class MetadataRow(BaseModel):
     blurry: bool | None = None
     color_tint: ColorTintEnum | None = None
 
-    @computed_field
+    @computed_field  # type: ignore[prop-decorator]
+    @property
     def diagnosis_1(self) -> str | None:
         return DiagnosisEnum.levels(self.diagnosis)[0] if self.diagnosis else None
 
-    @computed_field
+    @computed_field  # type: ignore[prop-decorator]
+    @property
     def diagnosis_2(self) -> str | None:
         return DiagnosisEnum.levels(self.diagnosis)[1] if self.diagnosis else None
 
-    @computed_field
+    @computed_field  # type: ignore[prop-decorator]
+    @property
     def diagnosis_3(self) -> str | None:
         return DiagnosisEnum.levels(self.diagnosis)[2] if self.diagnosis else None
 
-    @computed_field
+    @computed_field  # type: ignore[prop-decorator]
+    @property
     def diagnosis_4(self) -> str | None:
         return DiagnosisEnum.levels(self.diagnosis)[3] if self.diagnosis else None
 
-    @computed_field
+    @computed_field  # type: ignore[prop-decorator]
+    @property
     def diagnosis_5(self) -> str | None:
         return DiagnosisEnum.levels(self.diagnosis)[4] if self.diagnosis else None
 
-    @computed_field
+    @computed_field  # type: ignore[prop-decorator]
+    @property
     def anatom_site_1(self) -> str | None:
         return AnatomSiteEnum.levels(self.anatom_site)[0] if self.anatom_site else None
 
-    @computed_field
+    @computed_field  # type: ignore[prop-decorator]
+    @property
     def anatom_site_2(self) -> str | None:
         return AnatomSiteEnum.levels(self.anatom_site)[1] if self.anatom_site else None
 
-    @computed_field
+    @computed_field  # type: ignore[prop-decorator]
+    @property
     def anatom_site_3(self) -> str | None:
         return AnatomSiteEnum.levels(self.anatom_site)[2] if self.anatom_site else None
 
-    @computed_field
+    @computed_field  # type: ignore[prop-decorator]
+    @property
     def anatom_site_4(self) -> str | None:
         return AnatomSiteEnum.levels(self.anatom_site)[3] if self.anatom_site else None
 
-    @computed_field
+    @computed_field  # type: ignore[prop-decorator]
+    @property
     def anatom_site_5(self) -> str | None:
         return AnatomSiteEnum.levels(self.anatom_site)[4] if self.anatom_site else None
 
-    __slots__ = (IGNORE_RCM_MODEL_CHECKS,)
+    __slots__ = ("_ignore_rcm_model_checks",)
+    _ignore_rcm_model_checks: bool
 
     # see https://github.com/pydantic/pydantic/issues/655#issuecomment-570312649 for details on
     # implementing a private property to be used internally.
-    def __init__(self, **kwargs) -> None:
-        object.__setattr__(self, IGNORE_RCM_MODEL_CHECKS, False)
+    def __init__(self, *, _ignore_rcm_model_checks: bool = False, **kwargs: Any) -> None:
+        """
+        Create a MetadataRow instance.
 
-        if IGNORE_RCM_MODEL_CHECKS in kwargs:
-            object.__setattr__(self, IGNORE_RCM_MODEL_CHECKS, kwargs.pop(IGNORE_RCM_MODEL_CHECKS))
+        _ignore_rcm_model_checks is a special attribute that allows disabling RCM model checks. It's
+        provided to allow batch checks to be performed on a set of metadata rows, some of which may
+        not be valid on a row level. e.g. if a batch of metadata rows contains RCM case ids that are
+        inconsistent with lesion ids, that ought to be validated even if the row with an RCM case id
+        has a missing image_type for instance.
+        """
+        object.__setattr__(self, "_ignore_rcm_model_checks", _ignore_rcm_model_checks)
 
         super().__init__(**kwargs)
 
@@ -357,10 +365,10 @@ class MetadataRow(BaseModel):
 
     @field_validator("*", mode="before")
     @classmethod
-    def strip(cls, v: Any) -> Any:
+    def strip[T](cls, v: T) -> T | None:
         # str_strip_whitespace doesn't seem to work for Literal values as it does for str and enum
         if isinstance(v, str):
-            v = v.strip()
+            v = cast("T", v.strip())
 
         # drop empty strings as though they were never passed
         return None if v == "" else v
@@ -375,9 +383,9 @@ class MetadataRow(BaseModel):
         mode="before",
     )
     @classmethod
-    def lower(cls, v: Any) -> Any:
+    def lower[T](cls, v: T) -> T:
         if isinstance(v, str):
-            v = v.lower()
+            v = cast("T", v.lower())
         return v
 
     @model_validator(mode="after")
@@ -393,10 +401,10 @@ class MetadataRow(BaseModel):
                 continue
 
             if not self.diagnosis:
-                raise error_missing_field(field, "diagnosis", field2_value=self.diagnosis)
+                raise _error_missing_field(field, "diagnosis", field2_value=self.diagnosis)
 
             if not DiagnosisEnum.is_melanoma(self.diagnosis):
-                raise error_incompatible_fields(
+                raise _error_incompatible_fields(
                     field, "diagnosis", field2_value=self.diagnosis.value
                 )
 
@@ -404,21 +412,21 @@ class MetadataRow(BaseModel):
 
     @model_validator(mode="after")
     def validate_rcm_fields(self) -> MetadataRow:
-        if getattr(self, IGNORE_RCM_MODEL_CHECKS):
+        if self._ignore_rcm_model_checks:
             return self
 
         if not self.rcm_case_id:
             return self
 
         if not self.image_type:
-            raise error_missing_field("rcm_case_id", "image_type")
+            raise _error_missing_field("rcm_case_id", "image_type")
 
         if self.image_type not in [
             ImageTypeEnum.rcm_macroscopic,
             ImageTypeEnum.rcm_tile,
             ImageTypeEnum.rcm_mosaic,
         ]:
-            raise error_incompatible_fields(
+            raise _error_incompatible_fields(
                 "rcm_case_id", "image_type", field2_value=ImageTypeEnum.rcm_macroscopic
             )
 
@@ -430,10 +438,10 @@ class MetadataRow(BaseModel):
             return self
 
         if not self.image_type:
-            raise error_missing_field("dermoscopic_type", "image_type")
+            raise _error_missing_field("dermoscopic_type", "image_type")
 
         if self.image_type != ImageTypeEnum.dermoscopic:
-            raise error_incompatible_fields(
+            raise _error_incompatible_fields(
                 "dermoscopic_type", "image_type", field2_value="dermoscopic"
             )
 
@@ -445,7 +453,7 @@ class MetadataRow(BaseModel):
             return self
 
         if not self.anatom_site_general:
-            raise error_missing_field("anatom_site_special", "anatom_site_general")
+            raise _error_missing_field("anatom_site_special", "anatom_site_general")
 
         valid_combinations = {
             AnatomSiteSpecialEnum.acral_nos: [
@@ -480,11 +488,11 @@ class MetadataRow(BaseModel):
             ],
         }
 
-        if self.anatom_site_special.value not in valid_combinations:
+        if self.anatom_site_special not in valid_combinations:
             return self
 
-        if self.anatom_site_general.value not in valid_combinations[self.anatom_site_special.value]:
-            raise error_incompatible_fields(
+        if self.anatom_site_general not in valid_combinations[self.anatom_site_special]:
+            raise _error_incompatible_fields(
                 "anatom_site_special",
                 "anatom_site_general",
                 self.anatom_site_special.value,
@@ -499,13 +507,13 @@ class MetadataRow(BaseModel):
             return self
 
         if not self.image_type:
-            raise error_missing_field("tbp_tile_type", "image_type")
+            raise _error_missing_field("tbp_tile_type", "image_type")
 
         if self.image_type not in [
             ImageTypeEnum.tbp_tile_close_up,
             ImageTypeEnum.tbp_tile_overview,
         ]:
-            raise error_incompatible_fields(
+            raise _error_incompatible_fields(
                 "tbp_tile_type", "image_type", field2_value=self.image_type.value
             )
 
@@ -516,7 +524,7 @@ class MetadataRow(BaseModel):
         if self.concomitant_biopsy and (
             not self.diagnosis_confirm_type or self.diagnosis_confirm_type != "histopathology"
         ):
-            raise error_missing_field(
+            raise _error_missing_field(
                 "concomitant_biopsy", "diagnosis_confirm_type", field2_value="histopathology"
             )
 

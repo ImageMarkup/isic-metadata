@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from decimal import Decimal
 from typing import Any
 
@@ -28,7 +30,7 @@ from isic_metadata.metadata import MetadataRow, convert_errors
 )
 def test_non_str_types(
     field: str, str_value: str, parsed_value: Any, dependent_fields: dict[str, Any]
-):
+) -> None:
     as_str = MetadataRow.model_validate({field: str_value, **dependent_fields})
     as_real = MetadataRow.model_validate({field: parsed_value, **dependent_fields})
 
@@ -36,20 +38,20 @@ def test_non_str_types(
 
 
 @pytest.mark.parametrize(("emptyish_value"), ["", " ", "\t", None])
-def test_empty_fields_are_omitted(emptyish_value: Any):
+def test_empty_fields_are_omitted(emptyish_value: Any) -> None:
     metadata = MetadataRow.model_validate({"diagnosis": "Benign", "mel_ulcer": emptyish_value})
     assert metadata.diagnosis == "Benign"
     assert metadata.mel_thick_mm is None
 
 
-def test_unstructured_fields():
+def test_unstructured_fields() -> None:
     metadata = MetadataRow.model_validate({"diagnosis": "Benign", "hello": "world"})
     assert metadata.diagnosis == "Benign"
     assert metadata.unstructured["hello"] == "world"
 
 
 @pytest.mark.parametrize(("melanoma_diagnosis"), DiagnosisEnum._melanoma_diagnoses())
-def test_melanoma_fields(melanoma_diagnosis: str):
+def test_melanoma_fields(melanoma_diagnosis: str) -> None:
     with pytest.raises(ValidationError) as excinfo:
         # mel_ulcer can only be set if diagnosis is melanoma
         MetadataRow.model_validate({"diagnosis": "Benign", "mel_ulcer": True})
@@ -61,17 +63,17 @@ def test_melanoma_fields(melanoma_diagnosis: str):
 
 
 @given(age=st.integers(min_value=0).map(str))
-def test_age_ceiling(age: str):
+def test_age_ceiling(age: str) -> None:
     metadata = MetadataRow.model_validate({"age": age})
     assert metadata.age is not None
     assert metadata.age <= 85
 
 
-def test_age_special_case():
+def test_age_special_case() -> None:
     assert MetadataRow.model_validate({"age": "85+"}).age == 85
 
 
-def test_fitzpatrick_skin_type():
+def test_fitzpatrick_skin_type() -> None:
     MetadataRow.model_validate({"fitzpatrick_skin_type": "I"})
 
 
@@ -85,12 +87,12 @@ def test_fitzpatrick_skin_type():
         ("3.25", Decimal("3.25")),
     ],
 )
-def test_mel_thick_mm(raw: str, parsed: float):
+def test_mel_thick_mm(raw: str, parsed: float) -> None:
     metadata = MetadataRow.model_validate({"diagnosis": "Melanoma Invasive", "mel_thick_mm": raw})
     assert metadata.mel_thick_mm == parsed
 
 
-def test_mel_thick_mm_invalid():
+def test_mel_thick_mm_invalid() -> None:
     with pytest.raises(ValidationError) as excinfo:
         MetadataRow.model_validate({"mel_thick_mm": "foo"})
     assert len(excinfo.value.errors()) == 1
@@ -105,13 +107,13 @@ def test_mel_thick_mm_invalid():
         st.integers(min_value=1, max_value=9999),
     ).map(lambda x: f"{x} mm")
 )
-def test_clin_size_long_diam_mm_always_rounded(clin_size: str):
+def test_clin_size_long_diam_mm_always_rounded(clin_size: str) -> None:
     metadata = MetadataRow.model_validate({"clin_size_long_diam_mm": clin_size})
     assert isinstance(metadata.clin_size_long_diam_mm, Decimal)
     assert metadata.clin_size_long_diam_mm == round(metadata.clin_size_long_diam_mm, ndigits=1)
 
 
-def test_clin_size_long_diam_mm_invalid():
+def test_clin_size_long_diam_mm_invalid() -> None:
     with pytest.raises(ValidationError) as excinfo:
         MetadataRow.model_validate({"clin_size_long_diam_mm": "foo"})
     assert len(excinfo.value.errors()) == 1
@@ -132,7 +134,9 @@ def test_clin_size_long_diam_mm_invalid():
         ),
     ],
 )
-def test_anatom_site_special(anatom_site_special: str, anatom_site_general_values: list[str]):
+def test_anatom_site_special(
+    anatom_site_special: str, anatom_site_general_values: list[str]
+) -> None:
     for anatom_site_general_value in anatom_site_general_values:
         metadata = MetadataRow.model_validate(
             {
@@ -156,7 +160,7 @@ def test_anatom_site_special(anatom_site_special: str, anatom_site_general_value
             assert "is incompatible with anatom_site_general" in excinfo.value.errors()[0]["msg"]
 
 
-def test_anatom_site_special_requires_anatom_site_general():
+def test_anatom_site_special_requires_anatom_site_general() -> None:
     with pytest.raises(ValidationError) as excinfo:
         MetadataRow.model_validate({"anatom_site_special": "acral NOS"})
     assert len(excinfo.value.errors()) == 1

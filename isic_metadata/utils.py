@@ -1,6 +1,11 @@
-from collections.abc import Sequence
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 from isic_metadata.metadata import MetadataRow
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
 
 
 def get_unstructured_columns(column_names: Sequence[str]) -> list[str]:
