@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Any
 
 from pydantic import ValidationError
@@ -17,7 +19,7 @@ from isic_metadata.metadata import MetadataRow
 )
 def test_melanoma_fields_require_melanoma_diagnosis(
     diagnosis: str | None, field_name: str, field_value: Any
-):
+) -> None:
     with pytest.raises(ValidationError) as excinfo:
         MetadataRow.model_validate({field_name: field_value, "diagnosis": diagnosis})
     assert len(excinfo.value.errors()) == 1
@@ -27,7 +29,7 @@ def test_melanoma_fields_require_melanoma_diagnosis(
 
 
 @pytest.mark.skip("TODO: https://github.com/ImageMarkup/tracker/issues/141")
-def test_diagnosis_confirm_type_requires_diagnosis():
+def test_diagnosis_confirm_type_requires_diagnosis() -> None:
     with pytest.raises(ValidationError) as excinfo:
         MetadataRow.model_validate({"diagnosis_confirm_type": "histopathology"})
     assert len(excinfo.value.errors()) == 1
@@ -38,7 +40,7 @@ def test_diagnosis_confirm_type_requires_diagnosis():
     )
 
 
-def test_dermoscopic_type_requires_image_type_dermoscopic():
+def test_dermoscopic_type_requires_image_type_dermoscopic() -> None:
     with pytest.raises(ValidationError) as excinfo:
         MetadataRow.model_validate({"dermoscopic_type": "contact polarized"})
     assert len(excinfo.value.errors()) == 1
@@ -49,7 +51,7 @@ def test_dermoscopic_type_requires_image_type_dermoscopic():
     )
 
 
-def test_dermoscopic_type_requires_dermoscopic_image_type():
+def test_dermoscopic_type_requires_dermoscopic_image_type() -> None:
     with pytest.raises(ValidationError) as excinfo:
         MetadataRow.model_validate(
             {"dermoscopic_type": "contact polarized", "image_type": "clinical: overview"}
@@ -58,7 +60,7 @@ def test_dermoscopic_type_requires_dermoscopic_image_type():
     assert "dermoscopic_type is incompatible with image_type" in excinfo.value.errors()[0]["msg"]
 
 
-def test_rcm_case_id_requires_rcm_image_type():
+def test_rcm_case_id_requires_rcm_image_type() -> None:
     with pytest.raises(ValidationError) as excinfo:
         MetadataRow.model_validate({"rcm_case_id": "12345"})
     assert len(excinfo.value.errors()) == 1
@@ -67,7 +69,7 @@ def test_rcm_case_id_requires_rcm_image_type():
     MetadataRow.model_validate({"rcm_case_id": "12345", "image_type": "RCM: tile"})
 
 
-def test_rcm_model_checks_disabling():
+def test_rcm_model_checks_disabling() -> None:
     with pytest.raises(ValidationError) as excinfo:
         MetadataRow(rcm_case_id="12345")
     assert len(excinfo.value.errors()) == 1
@@ -76,7 +78,7 @@ def test_rcm_model_checks_disabling():
     MetadataRow(rcm_case_id="12345", _ignore_rcm_model_checks=True)
 
 
-def test_tbp_tile_type_requires_image_type_tbp_tile():
+def test_tbp_tile_type_requires_image_type_tbp_tile() -> None:
     with pytest.raises(ValidationError) as excinfo:
         MetadataRow.model_validate({"tbp_tile_type": "2D"})
     assert len(excinfo.value.errors()) == 1
@@ -86,7 +88,7 @@ def test_tbp_tile_type_requires_image_type_tbp_tile():
     MetadataRow.model_validate({"tbp_tile_type": "2D", "image_type": "TBP tile: overview"})
 
 
-def test_tbp_tile_type_requires_tbp_tile_image_type():
+def test_tbp_tile_type_requires_tbp_tile_image_type() -> None:
     with pytest.raises(ValidationError) as excinfo:
         MetadataRow.model_validate({"tbp_tile_type": "2D", "image_type": "clinical: overview"})
     assert len(excinfo.value.errors()) == 1
@@ -96,7 +98,7 @@ def test_tbp_tile_type_requires_tbp_tile_image_type():
     MetadataRow.model_validate({"tbp_tile_type": "2D", "image_type": "TBP tile: overview"})
 
 
-def test_concomitant_biopsy_requires_histopathology():
+def test_concomitant_biopsy_requires_histopathology() -> None:
     with pytest.raises(ValidationError) as excinfo:
         MetadataRow.model_validate(
             {"concomitant_biopsy": True, "diagnosis_confirm_type": "single image expert consensus"}

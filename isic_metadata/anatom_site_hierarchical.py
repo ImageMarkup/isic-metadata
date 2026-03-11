@@ -1,13 +1,11 @@
 from __future__ import annotations
 
-from enum import Enum
+from enum import StrEnum
 from functools import cache
-from typing import Any
-
-# ruff: noqa: E501
+from typing import Self
 
 
-class AnatomSiteEnum(str, Enum):
+class AnatomSiteEnum(StrEnum):
     head_and_neck = "Head and neck"
     trunk = "Trunk"
     upper_extremity = "Upper extremity"
@@ -355,8 +353,7 @@ class AnatomSiteEnum(str, Enum):
     @cache
     def levels(value: str) -> list[str | None]:
         levels_list = value.split(":")
-        levels_list += [None] * (5 - len(levels_list))
-        return levels_list
+        return levels_list + [None] * (5 - len(levels_list))
 
     @staticmethod
     @cache
@@ -371,20 +368,21 @@ class AnatomSiteEnum(str, Enum):
 
     @classmethod
     @cache
-    def reverse_ordered_hierarchy(cls) -> list[str]:
-        return sorted(cls, key=lambda x: x.value.count(":"), reverse=True)
+    def reverse_ordered_hierarchy(cls) -> list[Self]:
+        return sorted(cls, key=lambda x: x.count(":"), reverse=True)
 
     @classmethod
     @cache
-    def accept_terminal_values(cls, value: Any) -> Any:
+    def accept_terminal_values(cls, value: str) -> str:
         """
         Allow the user to specify any terminal value of the hierarchy to obtain the relevant value.
 
-        e.g. "Scalp" can be used to obtain "Head and neck:Head:Scalp", or "Head" for "Head and neck:Head".
+        e.g. "Scalp" can be used to obtain "Head and neck:Head:Scalp",
+        or "Head" for "Head and neck:Head".
         """
         if ":" not in value:
             for member in cls.reverse_ordered_hierarchy():
-                if value == member.value.split(":")[-1]:
-                    return member.value
+                if value == member.split(":")[-1]:
+                    return member
 
         return value

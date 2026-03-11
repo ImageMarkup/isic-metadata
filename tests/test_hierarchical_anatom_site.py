@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from pydantic import ValidationError
 import pytest
 
@@ -21,11 +23,11 @@ from isic_metadata.metadata import MetadataRow
         ),
     ],
 )
-def test_levels_at_each_depth(value, expected):
+def test_levels_at_each_depth(value: str, expected: list[str | None]) -> None:
     assert AnatomSiteEnum.levels(value) == expected
 
 
-def test_accept_terminal_values_resolves_leaf():
+def test_accept_terminal_values_resolves_leaf() -> None:
     assert AnatomSiteEnum.accept_terminal_values("Scalp") == "Head and neck:Head:Scalp"
     assert (
         AnatomSiteEnum.accept_terminal_values("Helix of pinna")
@@ -33,12 +35,12 @@ def test_accept_terminal_values_resolves_leaf():
     )
 
 
-def test_accept_terminal_values_passes_through_qualified():
+def test_accept_terminal_values_passes_through_qualified() -> None:
     qualified = "Head and neck:Head:Scalp"
     assert AnatomSiteEnum.accept_terminal_values(qualified) == qualified
 
 
-def test_accept_terminal_values_has_unique_terminals():
+def test_accept_terminal_values_has_unique_terminals() -> None:
     terminal_nodes = [member.value.split(":")[-1] for member in AnatomSiteEnum]
     assert len(terminal_nodes) == len(set(terminal_nodes))
 
@@ -59,20 +61,20 @@ def test_accept_terminal_values_has_unique_terminals():
         ),
     ],
 )
-def test_metadata_row_accepts_hierarchical_anatom_site(raw, parsed):
+def test_metadata_row_accepts_hierarchical_anatom_site(raw: str, parsed: list[str]) -> None:
     metadata = MetadataRow.model_validate({"anatom_site": raw})
     for i, value in enumerate(parsed, start=1):
         assert getattr(metadata, f"anatom_site_{i}") == value
 
 
-def test_top_level_anatom_site_is_never_exported():
+def test_top_level_anatom_site_is_never_exported() -> None:
     metadata = MetadataRow.model_validate({"anatom_site": "Head and neck"})
     dumped = metadata.model_dump()
     assert "anatom_site" not in dumped
     assert dumped["anatom_site_1"] == "Head and neck"
 
 
-def test_metadata_row_reassembles_individual_levels():
+def test_metadata_row_reassembles_individual_levels() -> None:
     metadata = MetadataRow.model_validate(
         {
             "anatom_site_1": "Head and neck",
@@ -87,7 +89,7 @@ def test_metadata_row_reassembles_individual_levels():
     assert metadata.anatom_site_5 is None
 
 
-def test_single_value_anatom_site_is_favored_over_levels():
+def test_single_value_anatom_site_is_favored_over_levels() -> None:
     metadata = MetadataRow.model_validate(
         {
             "anatom_site": "Lower extremity:Foot:Toes",
@@ -100,7 +102,7 @@ def test_single_value_anatom_site_is_favored_over_levels():
     assert metadata.anatom_site_3 == "Toes"
 
 
-def test_anatom_site_validation_is_idempotent():
+def test_anatom_site_validation_is_idempotent() -> None:
     metadata = MetadataRow.model_validate({"anatom_site": "Scalp"})
     metadata_2 = MetadataRow.model_validate(
         metadata.model_dump(exclude_unset=True, exclude_none=True, exclude={"unstructured"})
@@ -108,29 +110,29 @@ def test_anatom_site_validation_is_idempotent():
     assert metadata == metadata_2
 
 
-def test_anatom_site_general_and_special_unaffected():
+def test_anatom_site_general_and_special_unaffected() -> None:
     metadata = MetadataRow.model_validate(
         {
             "anatom_site_general": "head/neck",
             "anatom_site_special": "oral or genital",
         }
     )
-    assert metadata.anatom_site_general.value == "head/neck"
-    assert metadata.anatom_site_special.value == "oral or genital"
+    assert metadata.anatom_site_general == "head/neck"
+    assert metadata.anatom_site_special == "oral or genital"
 
 
-def test_anatom_site_general_coexists_with_hierarchical():
+def test_anatom_site_general_coexists_with_hierarchical() -> None:
     metadata = MetadataRow.model_validate(
         {
             "anatom_site_general": "head/neck",
             "anatom_site": "Head and neck:Head:Scalp",
         }
     )
-    assert metadata.anatom_site_general.value == "head/neck"
+    assert metadata.anatom_site_general == "head/neck"
     assert metadata.anatom_site_1 == "Head and neck"
     assert metadata.anatom_site_3 == "Scalp"
 
 
-def test_invalid_anatom_site_raises_error():
+def test_invalid_anatom_site_raises_error() -> None:
     with pytest.raises(ValidationError):
         MetadataRow.model_validate({"anatom_site": "Not a real site"})
