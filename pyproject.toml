@@ -42,7 +42,7 @@ lint = [
   "ruff==0.15.11",
 ]
 type = [
-  "mypy==1.20.1",
+  "mypy==1.20.2",
 ]
 test = [
   "hypothesis==6.152.1",
