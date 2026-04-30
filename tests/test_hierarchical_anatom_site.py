@@ -110,29 +110,6 @@ def test_anatom_site_validation_is_idempotent() -> None:
     assert metadata == metadata_2
 
 
-def test_anatom_site_general_and_special_unaffected() -> None:
-    metadata = MetadataRow.model_validate(
-        {
-            "anatom_site_general": "head/neck",
-            "anatom_site_special": "oral or genital",
-        }
-    )
-    assert metadata.anatom_site_general == "head/neck"
-    assert metadata.anatom_site_special == "oral or genital"
-
-
-def test_anatom_site_general_coexists_with_hierarchical() -> None:
-    metadata = MetadataRow.model_validate(
-        {
-            "anatom_site_general": "head/neck",
-            "anatom_site": "Head and neck:Head:Scalp",
-        }
-    )
-    assert metadata.anatom_site_general == "head/neck"
-    assert metadata.anatom_site_1 == "Head and neck"
-    assert metadata.anatom_site_3 == "Scalp"
-
-
 def test_invalid_anatom_site_raises_error() -> None:
     with pytest.raises(ValidationError):
         MetadataRow.model_validate({"anatom_site": "Not a real site"})

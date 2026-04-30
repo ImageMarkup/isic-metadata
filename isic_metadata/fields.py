@@ -137,17 +137,6 @@ class MelMitoticIndexEnum(StrEnum):
     gt_4 = ">4/mm^2"
 
 
-class AnatomSiteGeneralEnum(StrEnum):
-    head_neck = "head/neck"
-    upper_extremity = "upper extremity"
-    lower_extremity = "lower extremity"
-    anterior_torso = "anterior torso"
-    posterior_torso = "posterior torso"
-    palms_soles = "palms/soles"
-    lateral_torso = "lateral torso"
-    oral_genital = "oral/genital"
-
-
 class AnatomSiteSpecialEnum(StrEnum):
     acral_nos = "acral NOS"
     nail_nos = "nail NOS"

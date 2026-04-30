@@ -22,7 +22,6 @@ from isic_metadata.anatom_site_hierarchical import AnatomSiteEnum
 from isic_metadata.diagnosis_hierarchical import DiagnosisEnum
 from isic_metadata.fields import (
     Age,
-    AnatomSiteGeneralEnum,
     AnatomSiteSpecialEnum,
     ClinSizeLongDiamMm,
     ColorTintEnum,
@@ -194,7 +193,6 @@ class MetadataRow(BaseModel):
         | None
     ) = None
     sex: Literal["male", "female"] | None = None
-    anatom_site_general: AnatomSiteGeneralEnum | None = None
     anatom_site_special: AnatomSiteSpecialEnum | None = None
     anatom_site: (
         Annotated[
@@ -374,7 +372,6 @@ class MetadataRow(BaseModel):
         return None if v == "" else v
 
     @field_validator(
-        "anatom_site_general",
         "clin_size_long_diam_mm",
         "diagnosis_confirm_type",
         "mel_mitotic_index",
@@ -443,60 +440,6 @@ class MetadataRow(BaseModel):
         if self.image_type != ImageTypeEnum.dermoscopic:
             raise _error_incompatible_fields(
                 "dermoscopic_type", "image_type", field2_value="dermoscopic"
-            )
-
-        return self
-
-    @model_validator(mode="after")
-    def validate_anatom_site_special(self) -> MetadataRow:
-        if not self.anatom_site_special:
-            return self
-
-        if not self.anatom_site_general:
-            raise _error_missing_field("anatom_site_special", "anatom_site_general")
-
-        valid_combinations = {
-            AnatomSiteSpecialEnum.acral_nos: [
-                AnatomSiteGeneralEnum.upper_extremity,
-                AnatomSiteGeneralEnum.lower_extremity,
-                AnatomSiteGeneralEnum.palms_soles,
-            ],
-            AnatomSiteSpecialEnum.nail_nos: [
-                AnatomSiteGeneralEnum.upper_extremity,
-                AnatomSiteGeneralEnum.lower_extremity,
-                AnatomSiteGeneralEnum.palms_soles,
-            ],
-            AnatomSiteSpecialEnum.fingernail: [
-                AnatomSiteGeneralEnum.upper_extremity,
-                AnatomSiteGeneralEnum.palms_soles,
-            ],
-            AnatomSiteSpecialEnum.toenail: [
-                AnatomSiteGeneralEnum.lower_extremity,
-                AnatomSiteGeneralEnum.palms_soles,
-            ],
-            AnatomSiteSpecialEnum.acral_palms_soles: [
-                AnatomSiteGeneralEnum.upper_extremity,
-                AnatomSiteGeneralEnum.lower_extremity,
-                AnatomSiteGeneralEnum.palms_soles,
-            ],
-            AnatomSiteSpecialEnum.oral_genital: [
-                AnatomSiteGeneralEnum.head_neck,
-                AnatomSiteGeneralEnum.oral_genital,
-                AnatomSiteGeneralEnum.lower_extremity,
-                AnatomSiteGeneralEnum.anterior_torso,
-                AnatomSiteGeneralEnum.posterior_torso,
-            ],
-        }
-
-        if self.anatom_site_special not in valid_combinations:
-            return self
-
-        if self.anatom_site_general not in valid_combinations[self.anatom_site_special]:
-            raise _error_incompatible_fields(
-                "anatom_site_special",
-                "anatom_site_general",
-                self.anatom_site_special.value,
-                self.anatom_site_general.value,
             )
 
         return self
