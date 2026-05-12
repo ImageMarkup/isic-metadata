@@ -4,7 +4,6 @@ from isic_metadata.anatom_site_hierarchical import AnatomSiteEnum
 from isic_metadata.diagnosis_hierarchical import DiagnosisEnum
 from isic_metadata.fields import (
     Age,
-    AnatomSiteGeneralEnum,
     AnatomSiteSpecialEnum,
     ClinSizeLongDiamMm,
     ColorTintEnum,
@@ -26,7 +25,6 @@ __all__ = [
     "FIELD_REGISTRY",
     "Age",
     "AnatomSiteEnum",
-    "AnatomSiteGeneralEnum",
     "AnatomSiteSpecialEnum",
     "ClinSizeLongDiamMm",
     "ColorTintEnum",

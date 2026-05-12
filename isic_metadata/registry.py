@@ -46,7 +46,6 @@ for field in [
     "dermoscopic_type",
     "tbp_tile_type",
     "mel_mitotic_index",
-    "anatom_site_general",
     "anatom_site_special",
     "color_tint",
     "patient_id",
@@ -201,8 +200,3 @@ for field in FIELD_REGISTRY:  # noqa: PLC0206
         FIELD_REGISTRY[field].type = "acquisition"
     else:
         FIELD_REGISTRY[field].type = "clinical"
-
-for field, label in [
-    ("anatom_site_general", "Anatomic Site"),
-]:
-    FIELD_REGISTRY[field].label = label

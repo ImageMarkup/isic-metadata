@@ -9,7 +9,6 @@ from pydantic import ValidationError
 import pytest
 
 from isic_metadata.diagnosis_hierarchical import DiagnosisEnum
-from isic_metadata.fields import AnatomSiteGeneralEnum
 from isic_metadata.metadata import MetadataRow, convert_errors
 
 
@@ -118,50 +117,3 @@ def test_clin_size_long_diam_mm_invalid() -> None:
         MetadataRow.model_validate({"clin_size_long_diam_mm": "foo"})
     assert len(excinfo.value.errors()) == 1
     assert "Unable to parse value as a number" in convert_errors(excinfo.value)[0]["msg"]
-
-
-@pytest.mark.parametrize(
-    ("anatom_site_special", "anatom_site_general_values"),
-    [
-        ("acral NOS", ["upper extremity", "lower extremity", "palms/soles"]),
-        ("nail NOS", ["upper extremity", "lower extremity", "palms/soles"]),
-        ("fingernail", ["upper extremity", "palms/soles"]),
-        ("toenail", ["lower extremity", "palms/soles"]),
-        ("acral palms or soles", ["upper extremity", "lower extremity", "palms/soles"]),
-        (
-            "oral or genital",
-            ["head/neck", "oral/genital", "lower extremity", "anterior torso", "posterior torso"],
-        ),
-    ],
-)
-def test_anatom_site_special(
-    anatom_site_special: str, anatom_site_general_values: list[str]
-) -> None:
-    for anatom_site_general_value in anatom_site_general_values:
-        metadata = MetadataRow.model_validate(
-            {
-                "anatom_site_special": anatom_site_special,
-                "anatom_site_general": anatom_site_general_value,
-            }
-        )
-        assert metadata.anatom_site_special == anatom_site_special
-        assert metadata.anatom_site_general == anatom_site_general_value
-
-    for invalid_anatom_site_general in AnatomSiteGeneralEnum:
-        if invalid_anatom_site_general.value not in anatom_site_general_values:
-            with pytest.raises(ValidationError) as excinfo:
-                MetadataRow.model_validate(
-                    {
-                        "anatom_site_special": anatom_site_special,
-                        "anatom_site_general": invalid_anatom_site_general.value,
-                    }
-                )
-            assert len(excinfo.value.errors()) == 1
-            assert "is incompatible with anatom_site_general" in excinfo.value.errors()[0]["msg"]
-
-
-def test_anatom_site_special_requires_anatom_site_general() -> None:
-    with pytest.raises(ValidationError) as excinfo:
-        MetadataRow.model_validate({"anatom_site_special": "acral NOS"})
-    assert len(excinfo.value.errors()) == 1
-    assert "requires setting anatom_site_general" in excinfo.value.errors()[0]["msg"]
