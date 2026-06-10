@@ -12,6 +12,7 @@ from pydantic import (
     ConfigDict,
     Field,
     ValidationError,
+    ValidationInfo,
     computed_field,
     field_validator,
     model_validator,
@@ -304,25 +305,6 @@ class MetadataRow(BaseModel):
     def anatom_site_5(self) -> str | None:
         return AnatomSiteEnum.levels(self.anatom_site)[4] if self.anatom_site else None
 
-    __slots__ = ("_ignore_rcm_model_checks",)
-    _ignore_rcm_model_checks: bool
-
-    # see https://github.com/pydantic/pydantic/issues/655#issuecomment-570312649 for details on
-    # implementing a private property to be used internally.
-    def __init__(self, *, _ignore_rcm_model_checks: bool = False, **kwargs: Any) -> None:
-        """
-        Create a MetadataRow instance.
-
-        _ignore_rcm_model_checks is a special attribute that allows disabling RCM model checks. It's
-        provided to allow batch checks to be performed on a set of metadata rows, some of which may
-        not be valid on a row level. e.g. if a batch of metadata rows contains RCM case ids that are
-        inconsistent with lesion ids, that ought to be validated even if the row with an RCM case id
-        has a missing image_type for instance.
-        """
-        object.__setattr__(self, "_ignore_rcm_model_checks", _ignore_rcm_model_checks)
-
-        super().__init__(**kwargs)
-
     @model_validator(mode="before")
     @classmethod
     def handle_hierarchical_modes_and_unstructured_fields(
@@ -408,8 +390,18 @@ class MetadataRow(BaseModel):
         return self
 
     @model_validator(mode="after")
-    def validate_rcm_fields(self) -> MetadataRow:
-        if self._ignore_rcm_model_checks:
+    def validate_rcm_fields(self, info: ValidationInfo) -> MetadataRow:
+        """
+        Validate that rcm_case_id is only used with RCM image types.
+
+        These checks can be disabled by passing "ignore_rcm_model_checks" via the validation
+        context: MetadataRow.model_validate(..., context={"ignore_rcm_model_checks": True}).
+        This is provided to allow batch checks to be performed on a set of metadata rows, some
+        of which may not be valid on a row level. e.g. if a batch of metadata rows contains RCM
+        case ids that are inconsistent with lesion ids, that ought to be validated even if the
+        row with an RCM case id has a missing image_type for instance.
+        """
+        if info.context and info.context.get("ignore_rcm_model_checks"):
             return self
 
         if not self.rcm_case_id:

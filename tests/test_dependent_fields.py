@@ -75,7 +75,7 @@ def test_rcm_model_checks_disabling() -> None:
     assert len(excinfo.value.errors()) == 1
     assert "rcm_case_id requires setting image_type" in excinfo.value.errors()[0]["msg"]
 
-    MetadataRow(rcm_case_id="12345", _ignore_rcm_model_checks=True)
+    MetadataRow.model_validate({"rcm_case_id": "12345"}, context={"ignore_rcm_model_checks": True})
 
 
 def test_tbp_tile_type_requires_image_type_tbp_tile() -> None:
