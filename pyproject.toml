@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "isic-metadata"
-description = ""
+description = "Schema definitions and validation for ISIC Archive image metadata."
 readme = "README.md"
 requires-python = ">=3.12"
 license = "Apache-2.0"
