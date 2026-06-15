@@ -35,17 +35,17 @@ Repository = "https://github.com/ImageMarkup/isic-metadata"
 
 [dependency-groups]
 dev = [
-  "tox==4.54.0",
+  "tox==4.55.1",
   "tox-uv==1.35.2",
 ]
 lint = [
-  "ruff==0.15.14",
+  "ruff==0.15.17",
 ]
 type = [
   "mypy==2.1.0",
 ]
 test = [
-  "hypothesis==6.152.9",
+  "hypothesis==6.155.2",
   "pydantic-to-pyarrow==0.1.6",
   "pytest==9.0.3",
   "pytest-cov==7.1.0",
