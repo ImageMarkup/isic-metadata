@@ -45,7 +45,7 @@ type = [
   "mypy==2.3.0",
 ]
 test = [
-  "hypothesis==6.164.0",
+  "hypothesis==6.165.2",
   "pydantic-to-pyarrow==0.1.6",
   "pytest==9.1.1",
   "pytest-cov==7.1.0",
