@@ -39,13 +39,13 @@ dev = [
   "tox-uv==1.36.0",
 ]
 lint = [
-  "ruff==0.16.3",
+  "ruff==0.16.4",
 ]
 type = [
-  "mypy==2.3.0",
+  "mypy==2.3.1",
 ]
 test = [
-  "hypothesis==6.165.7",
+  "hypothesis==6.165.10",
   "pydantic-to-pyarrow==0.1.6",
   "pytest==9.1.1",
   "pytest-cov==7.1.0",
