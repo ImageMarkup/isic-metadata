@@ -40,8 +40,12 @@ def test_rcm_case_has_at_most_one_macroscopic_image() -> None:
     with pytest.raises(ValidationError) as excinfo:
         MetadataBatch(
             items=[
-                MetadataRow(image_type="RCM: macroscopic", rcm_case_id="foo"),
-                MetadataRow(image_type="RCM: macroscopic", rcm_case_id="foo"),
+                MetadataRow.model_validate(
+                    {"image_type": "RCM: macroscopic", "rcm_case_id": "foo"}
+                ),
+                MetadataRow.model_validate(
+                    {"image_type": "RCM: macroscopic", "rcm_case_id": "foo"}
+                ),
             ]
         )
     assert len(excinfo.value.errors()) == 1
@@ -49,23 +53,30 @@ def test_rcm_case_has_at_most_one_macroscopic_image() -> None:
 
     MetadataBatch(
         items=[
-            MetadataRow(image_type="RCM: macroscopic", rcm_case_id="foo"),
-            MetadataRow(image_type="RCM: macroscopic", rcm_case_id="bar"),
+            MetadataRow.model_validate({"image_type": "RCM: macroscopic", "rcm_case_id": "foo"}),
+            MetadataRow.model_validate({"image_type": "RCM: macroscopic", "rcm_case_id": "bar"}),
         ]
     )
 
 
 def test_rcm_cases_belong_to_same_lesion() -> None:
     with pytest.raises(ValidationError) as excinfo:
-        MetadataBatch(
-            items=[
-                MetadataRow(
-                    rcm_case_id="foo", lesion_id="foolesion", _ignore_rcm_model_checks=True
-                ),
-                MetadataRow(
-                    rcm_case_id="foo", lesion_id="barlesion", _ignore_rcm_model_checks=True
-                ),
-            ]
+        # passing model instances to MetadataBatch re-runs their "after" model validators,
+        # so the context must be provided here too.
+        MetadataBatch.model_validate(
+            {
+                "items": [
+                    MetadataRow.model_validate(
+                        {"rcm_case_id": "foo", "lesion_id": "foolesion"},
+                        context={"ignore_rcm_model_checks": True},
+                    ),
+                    MetadataRow.model_validate(
+                        {"rcm_case_id": "foo", "lesion_id": "barlesion"},
+                        context={"ignore_rcm_model_checks": True},
+                    ),
+                ]
+            },
+            context={"ignore_rcm_model_checks": True},
         )
     assert len(excinfo.value.errors()) == 1
     assert "belong to multiple lesions" in excinfo.value.errors()[0]["msg"]
