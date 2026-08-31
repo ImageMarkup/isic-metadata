@@ -35,11 +35,11 @@ Repository = "https://github.com/ImageMarkup/isic-metadata"
 
 [dependency-groups]
 dev = [
-  "tox==4.60.0",
+  "tox==4.60.1",
   "tox-uv==1.36.0",
 ]
 lint = [
-  "ruff==0.16.4",
+  "ruff==0.16.5",
 ]
 type = [
   "mypy==2.3.1",
