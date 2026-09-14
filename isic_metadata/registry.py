@@ -21,9 +21,6 @@ class Field:
 FIELD_REGISTRY: dict[str, Field] = {}
 
 for field in [
-    "blurry",
-    "hairy",
-    "marker_pen",
     "personal_hx_mm",
     "family_hx_mm",
     "melanocytic",
@@ -47,7 +44,6 @@ for field in [
     "tbp_tile_type",
     "mel_mitotic_index",
     "anatom_site_special",
-    "color_tint",
     "patient_id",
     "lesion_id",
     "rcm_case_id",
@@ -189,12 +185,8 @@ FIELD_REGISTRY.update(
 
 for field in FIELD_REGISTRY:  # noqa: PLC0206
     if field in [
-        "blurry",
-        "color_tint",
         "dermoscopic_type",
-        "hairy",
         "image_type",
-        "marker_pen",
         "image_manipulation",
     ]:
         FIELD_REGISTRY[field].type = "acquisition"

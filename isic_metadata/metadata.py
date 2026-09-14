@@ -24,7 +24,6 @@ from isic_metadata.fields import (
     Age,
     AnatomSiteSpecialEnum,
     ClinSizeLongDiamMm,
-    ColorTintEnum,
     DermoscopicTypeEnum,
     DiagnosisConfirmTypeEnum,
     FitzpatrickSkinType,
@@ -247,12 +246,6 @@ class MetadataRow(BaseModel):
     rcm_case_id: str | None = None
 
     unstructured: dict[str, Any] = Field(default_factory=dict, exclude=True)
-
-    # Unused and undocumented
-    marker_pen: bool | None = None
-    hairy: bool | None = None
-    blurry: bool | None = None
-    color_tint: ColorTintEnum | None = None
 
     @computed_field  # type: ignore[prop-decorator]
     @property
