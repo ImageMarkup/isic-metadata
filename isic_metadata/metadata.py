@@ -389,7 +389,7 @@ class MetadataRow(BaseModel):
         ]
 
         for field in melanoma_fields:
-            if not getattr(self, field):
+            if getattr(self, field) is None:
                 continue
 
             if not self.diagnosis:
