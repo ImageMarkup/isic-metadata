@@ -13,8 +13,12 @@ from isic_metadata.metadata import MetadataRow
     ("field_name", "field_value"),
     [
         ("mel_mitotic_index", "4/mm^2"),
+        ("mel_mitotic_index", "0/mm^2"),
         ("mel_thick_mm", "4mm"),
+        ("mel_thick_mm", "0mm"),
+        ("mel_thick_mm", 0),
         ("mel_ulcer", True),
+        ("mel_ulcer", False),
     ],
 )
 def test_melanoma_fields_require_melanoma_diagnosis(
