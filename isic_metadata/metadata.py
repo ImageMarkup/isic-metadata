@@ -411,7 +411,7 @@ class MetadataRow(BaseModel):
             ImageTypeEnum.rcm_mosaic,
         ]:
             raise _error_incompatible_fields(
-                "rcm_case_id", "image_type", field2_value=ImageTypeEnum.rcm_macroscopic
+                "rcm_case_id", "image_type", field2_value=self.image_type.value
             )
 
         return self
@@ -426,7 +426,7 @@ class MetadataRow(BaseModel):
 
         if self.image_type != ImageTypeEnum.dermoscopic:
             raise _error_incompatible_fields(
-                "dermoscopic_type", "image_type", field2_value="dermoscopic"
+                "dermoscopic_type", "image_type", field2_value=self.image_type.value
             )
 
         return self

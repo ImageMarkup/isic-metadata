@@ -56,12 +56,14 @@ def test_dermoscopic_type_requires_image_type_dermoscopic() -> None:
 
 
 def test_dermoscopic_type_requires_dermoscopic_image_type() -> None:
+    row = {"dermoscopic_type": "contact polarized", "image_type": "clinical: overview"}
     with pytest.raises(ValidationError) as excinfo:
-        MetadataRow.model_validate(
-            {"dermoscopic_type": "contact polarized", "image_type": "clinical: overview"}
-        )
+        MetadataRow.model_validate(row)
     assert len(excinfo.value.errors()) == 1
-    assert "dermoscopic_type is incompatible with image_type" in excinfo.value.errors()[0]["msg"]
+    assert (
+        f"dermoscopic_type is incompatible with image_type {row['image_type']}"
+        in excinfo.value.errors()[0]["msg"]
+    )
 
 
 def test_rcm_case_id_requires_rcm_image_type() -> None:
@@ -69,6 +71,15 @@ def test_rcm_case_id_requires_rcm_image_type() -> None:
         MetadataRow.model_validate({"rcm_case_id": "12345"})
     assert len(excinfo.value.errors()) == 1
     assert "rcm_case_id requires setting image_type" in excinfo.value.errors()[0]["msg"]
+
+    row = {"rcm_case_id": "12345", "image_type": "dermoscopic"}
+    with pytest.raises(ValidationError) as excinfo:
+        MetadataRow.model_validate(row)
+    assert len(excinfo.value.errors()) == 1
+    assert (
+        f"rcm_case_id is incompatible with image_type {row['image_type']}"
+        in excinfo.value.errors()[0]["msg"]
+    )
 
     MetadataRow.model_validate({"rcm_case_id": "12345", "image_type": "RCM: tile"})
 
