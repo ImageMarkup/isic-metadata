@@ -98,6 +98,15 @@ def test_mel_thick_mm_invalid() -> None:
     assert "Unable to parse value as a number" in convert_errors(excinfo.value)[0]["msg"]
 
 
+@given(mel_thick=st.integers(min_value=-99999, max_value=-1).map(lambda x: Decimal(x) / 100))
+def test_mel_thick_mm_negative(mel_thick: Decimal) -> None:
+    for value in [mel_thick, str(mel_thick)]:
+        with pytest.raises(ValidationError) as excinfo:
+            MetadataRow.model_validate({"diagnosis": "Melanoma Invasive", "mel_thick_mm": value})
+        assert len(excinfo.value.errors()) == 1
+        assert excinfo.value.errors()[0]["type"] == "greater_than_equal"
+
+
 @given(
     clin_size=st.one_of(
         # keep max values bounded so they don't generate larger than representable decimals.

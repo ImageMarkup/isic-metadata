@@ -229,6 +229,7 @@ class MetadataRow(BaseModel):
             Decimal,
             BeforeValidator(MelThickMm.parse_measurement_str),
             Field(max_digits=5, decimal_places=2),
+            Ge(0),
         ]
         | None
     ) = None
