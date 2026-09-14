@@ -146,12 +146,6 @@ class AnatomSiteSpecialEnum(StrEnum):
     oral_genital = "oral or genital"
 
 
-class ColorTintEnum(StrEnum):
-    blue = "blue"
-    pink = "pink"
-    none = "none"
-
-
 class FitzpatrickSkinType(StrEnum):
     type_i = "I"
     type_ii = "II"
