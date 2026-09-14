@@ -117,3 +117,12 @@ def test_clin_size_long_diam_mm_invalid() -> None:
         MetadataRow.model_validate({"clin_size_long_diam_mm": "foo"})
     assert len(excinfo.value.errors()) == 1
     assert "Unable to parse value as a number" in convert_errors(excinfo.value)[0]["msg"]
+
+
+@given(clin_size=st.integers(min_value=-9999, max_value=-1).map(lambda x: Decimal(x) / 10))
+def test_clin_size_long_diam_mm_negative(clin_size: Decimal) -> None:
+    for value in [clin_size, str(clin_size), f"{clin_size} mm"]:
+        with pytest.raises(ValidationError) as excinfo:
+            MetadataRow.model_validate({"clin_size_long_diam_mm": value})
+        assert len(excinfo.value.errors()) == 1
+        assert excinfo.value.errors()[0]["type"] == "greater_than_equal"

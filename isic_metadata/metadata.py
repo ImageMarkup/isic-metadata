@@ -215,6 +215,7 @@ class MetadataRow(BaseModel):
             Decimal,
             BeforeValidator(ClinSizeLongDiamMm.parse_measurement_str),
             Field(max_digits=5, decimal_places=2),
+            Ge(0),
         ]
         | None
     ) = None
