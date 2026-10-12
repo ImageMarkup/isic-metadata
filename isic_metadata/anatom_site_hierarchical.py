@@ -4,6 +4,8 @@ from enum import StrEnum
 from functools import cache
 from typing import Self
 
+from isic_metadata.hierarchy import suggestion_error
+
 
 class AnatomSiteEnum(StrEnum):
     head_and_neck = "Head and neck"
@@ -384,5 +386,8 @@ class AnatomSiteEnum(StrEnum):
             for member in cls.reverse_ordered_hierarchy():
                 if value == member.split(":")[-1]:
                     return member
+
+        if value not in cls:
+            raise suggestion_error("anatomic site", cls, value)
 
         return value
