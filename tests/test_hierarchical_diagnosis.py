@@ -36,6 +36,27 @@ def test_diagnosis(raw: str, parsed: list[str]) -> None:
         assert getattr(metadata, f"diagnosis_{i}") == diagnosis
 
 
+@pytest.mark.parametrize(
+    ("raw", "message"),
+    [
+        ("qqqqq", "Unknown diagnosis 'qqqqq'."),
+        (
+            "melanoma invasive",
+            (
+                "Unknown diagnosis 'melanoma invasive'. Did you mean 'Melanoma Invasive', "
+                "'Melanoma Invasive, Nevoid' or 'Melanoma Invasive, Nodular'?"
+            ),
+        ),
+    ],
+)
+def test_invalid_diagnosis_raises_short_error(raw: str, message: str) -> None:
+    # pydantic's own enum error would list all several hundred diagnoses
+    with pytest.raises(ValidationError) as excinfo:
+        MetadataRow.model_validate({"diagnosis": raw})
+
+    assert excinfo.value.errors()[0]["msg"] == message
+
+
 def test_top_level_diagnosis_is_never_exported() -> None:
     metadata = MetadataRow.model_validate({"diagnosis": "Benign"})
     assert "diagnosis" not in metadata.model_dump()

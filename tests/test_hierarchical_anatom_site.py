@@ -110,6 +110,22 @@ def test_anatom_site_validation_is_idempotent() -> None:
     assert metadata == metadata_2
 
 
-def test_invalid_anatom_site_raises_error() -> None:
-    with pytest.raises(ValidationError):
-        MetadataRow.model_validate({"anatom_site": "Not a real site"})
+@pytest.mark.parametrize(
+    ("raw", "message"),
+    [
+        ("Not a real site", "Unknown anatomic site 'Not a real site'."),
+        ("Trunk:Back", "Unknown anatomic site 'Trunk:Back'. Did you mean 'Trunk'?"),
+        (
+            "upper leg",
+            (
+                "Unknown anatomic site 'upper leg'. "
+                "Did you mean 'Upper lip', 'Upper cheek' or 'Upper arm'?"
+            ),
+        ),
+    ],
+)
+def test_invalid_anatom_site_raises_short_error(raw: str, message: str) -> None:
+    with pytest.raises(ValidationError) as excinfo:
+        MetadataRow.model_validate({"anatom_site": raw})
+
+    assert excinfo.value.errors()[0]["msg"] == message
