@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections import defaultdict
 from decimal import Decimal
-from typing import Annotated, Any, Literal, cast
+from typing import Annotated, Any, Final, Literal, cast
 
 from annotated_types import Ge
 from pydantic import (
@@ -34,6 +34,10 @@ from isic_metadata.fields import (
     MelThickMm,
     TBPTileTypeEnum,
 )
+
+# a spreadsheet evaluates a cell starting with one of these as a formula, see
+# MetadataRow.validate_no_value_needs_escaping.
+FORBIDDEN_LEADING_CHARS: Final = ("=", "-", "+", "@")
 
 _CUSTOM_MESSAGES = {
     "enum": "Unsupported value for {loc}: '{value}'.",
@@ -361,6 +365,33 @@ class MetadataRow(BaseModel):
         if isinstance(v, str):
             v = cast("T", v.lower())
         return v
+
+    @model_validator(mode="after")
+    def validate_no_value_needs_escaping(self) -> MetadataRow:
+        """
+        Reject any exported value that a spreadsheet would evaluate as a formula.
+
+        This is what lets the archive write metadata CSVs without escaping every value. The dumped
+        row is checked rather than the declared fields so that computed fields, and any field added
+        later, are covered without needing a validator of their own. Numbers and booleans are
+        written to a CSV as bare literals, which a spreadsheet reads as values rather than formulas.
+        """
+        for field, value in self.model_dump().items():
+            if isinstance(value, str):
+                text = value
+            elif value is None or isinstance(value, (bool, int, float, Decimal)):
+                continue
+            else:
+                text = str(value)
+
+            if text.startswith(FORBIDDEN_LEADING_CHARS):
+                raise PydanticCustomError(
+                    "forbidden_leading_character",
+                    "Setting {field} to a value starting with '{char}' is not allowed.",
+                    {"field": field, "char": text[0]},
+                )
+
+        return self
 
     @model_validator(mode="after")
     def validate_melanoma_fields(self) -> MetadataRow:
