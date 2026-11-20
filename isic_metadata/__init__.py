@@ -15,12 +15,18 @@ from isic_metadata.fields import (
     MelThickMm,
     TBPTileTypeEnum,
 )
-from isic_metadata.metadata import MetadataBatch, MetadataRow, convert_errors
+from isic_metadata.metadata import (
+    FORBIDDEN_LEADING_CHARS,
+    MetadataBatch,
+    MetadataRow,
+    convert_errors,
+)
 from isic_metadata.registry import FIELD_REGISTRY, Field, SearchConfig
 from isic_metadata.utils import get_unstructured_columns
 
 __all__ = [
     "FIELD_REGISTRY",
+    "FORBIDDEN_LEADING_CHARS",
     "Age",
     "AnatomSiteEnum",
     "AnatomSiteSpecialEnum",
